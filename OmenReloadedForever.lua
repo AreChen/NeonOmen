@@ -113,8 +113,8 @@ InitDB()
 -- gleiches Muster wie LevelProgress.
 -- ------------------------------------------------------------
 local L = {
-    TITLE = "OmenReloadedForever",
-    TITLE_TESTMODE = "OmenReloadedForever (Test Mode)",
+    TITLE = "NeonOmen",
+    TITLE_TESTMODE = "NeonOmen (Test Mode)",
     HEADER_NAME = "Name",
     HEADER_THREAT = "Threat %",
     HEADER_TPS = "TPS",
@@ -225,7 +225,7 @@ local L = {
     DEBUG_ME = "me",
     ON = "ON",
     OFF = "OFF",
-    ERROR_PREFIX = "OmenReloadedForever ERROR:",
+    ERROR_PREFIX = "NeonOmen ERROR:",
 
     SND_RAID_WARNING = "Raid Warning (Gong)",
     SND_READY_CHECK = "Ready Check",
@@ -249,7 +249,7 @@ local L = {
 }
 
 if GetLocale() == "deDE" then
-    L.TITLE_TESTMODE = "OmenReloadedForever (Testmodus)"
+    L.TITLE_TESTMODE = "NeonOmen (Testmodus)"
     L.HEADER_THREAT = "Threat %"
     L.EMPTY_TEXT = "Keine Threat-Daten (kein Kampf/kein Ziel)"
     L.YOU = "Du"
@@ -372,7 +372,7 @@ end
 -- Franzoesisch (frFR). Uebersetzt mit den Begriffen des franzoesischen
 -- WoW-Clients, nicht von Muttersprachlern gegengelesen.
 if GetLocale() == "frFR" then
-    L.TITLE_TESTMODE = "OmenReloadedForever (Mode test)"
+    L.TITLE_TESTMODE = "NeonOmen (Mode test)"
     L.HEADER_NAME = "Nom"
     L.HEADER_THREAT = "Menace %"
     L.EMPTY_TEXT = "Aucune donnée de menace (hors combat / pas de cible)"
@@ -475,7 +475,7 @@ if GetLocale() == "frFR" then
     L.DEBUG_TARGET = "Unité cible : %s = %s, sa cible : %s"
     L.DEBUG_AGGRO = "Suivi de l'aggro : dernier tank=%s, alerte AGGRO!=%s, rôle tank détecté=%s"
     L.DEBUG_ME = "moi"
-    L.ERROR_PREFIX = "OmenReloadedForever ERREUR :"
+    L.ERROR_PREFIX = "NeonOmen ERREUR :"
 
     L.SND_RAID_WARNING = "Avertissement de raid (gong)"
     L.SND_READY_CHECK = "Appel"
@@ -497,7 +497,7 @@ end
 -- Spanisch (esES Spanien, esMX Lateinamerika -- gleiche Texte). Uebersetzt
 -- mit den Begriffen des spanischen WoW-Clients, nicht gegengelesen.
 if GetLocale() == "esES" or GetLocale() == "esMX" then
-    L.TITLE_TESTMODE = "OmenReloadedForever (Modo de prueba)"
+    L.TITLE_TESTMODE = "NeonOmen (Modo de prueba)"
     L.HEADER_NAME = "Nombre"
     L.HEADER_THREAT = "Amenaza %"
     L.EMPTY_TEXT = "Sin datos de amenaza (fuera de combate / sin objetivo)"
@@ -602,7 +602,7 @@ if GetLocale() == "esES" or GetLocale() == "esMX" then
     L.DEBUG_ME = "yo"
     L.ON = "SÍ"
     L.OFF = "NO"
-    L.ERROR_PREFIX = "OmenReloadedForever ERROR:"
+    L.ERROR_PREFIX = "NeonOmen ERROR:"
 
     L.SND_RAID_WARNING = "Aviso de banda (gong)"
     L.SND_READY_CHECK = "Comprobación de listos"
@@ -624,7 +624,7 @@ end
 -- Tastenbelegungen (Bindings.xml ruft die globalen Funktionen unten auf).
 ns.ApplyLocale(L)
 
-BINDING_HEADER_OMENRELOADEDFOREVER = "OmenReloadedForever"
+BINDING_HEADER_OMENRELOADEDFOREVER = "NeonOmen"
 BINDING_NAME_ORF_TOGGLE = L.BIND_TOGGLE
 BINDING_NAME_ORF_TOGGLEFOCUS = L.BIND_FOCUS
 BINDING_NAME_ORF_TESTMODE = L.BIND_TESTMODE

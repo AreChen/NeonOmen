@@ -1,4 +1,4 @@
-# OmenReloadedForever
+# NeonOmen
 
 A threat meter for World of Warcraft Forever, customized with a neon-style interface and English, Traditional Chinese, and Simplified Chinese text.
 
@@ -10,7 +10,7 @@ A threat meter for World of Warcraft Forever, customized with a neon-style inter
 
 ## Installation
 
-Copy this repository's addon files into `Interface/AddOns/OmenReloadedForever`, then reload the game UI. The development repository and the installed addon are separate copies; changes need to be copied into the game directory.
+The installation folder retains the original name for compatibility. Copy this repository's addon files into `Interface/AddOns/OmenReloadedForever`, then reload the game UI. The development repository and the installed addon are separate copies; changes need to be copied into the game directory.
 
 Use `/orf` to open settings and `/orf test` to toggle test mode.
 

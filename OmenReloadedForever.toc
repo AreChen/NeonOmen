@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Interface-Classic: 16001
-## Title: OmenReloadedForever
+## Title: NeonOmen
 ## Notes: Lightweight threat meter for WoW Forever, in the style of the classic Omen (standalone rewrite, not a fork).
 ## Notes-zhTW: 現代風格的仇恨監測與警報。
 ## Notes-zhCN: 现代风格的仇恨监测与警报。
