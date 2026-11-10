@@ -3,6 +3,7 @@
 -- Unit-Threat-APIs (kein Combat-Log, der ist auf diesem Client gesperrt).
 
 local addonName, ns = ...
+local Theme = ns.Theme
 
 -- WICHTIG: WoW laedt die SavedVariables erst NACH dem Ausfuehren dieser Datei
 -- (direkt vor ADDON_LOADED) und ersetzt dabei die globale Tabelle. Standardwerte,
@@ -1242,37 +1243,7 @@ local function CreateBar(index)
     bar:SetValue(0)
     bar:Hide()
 
-    local bg = bar:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetTexture("Interface\\Buttons\\WHITE8x8")
-    bg:SetVertexColor(0.025, 0.03, 0.04, 0.96)
-
-    -- Draw above the fill: a background-layer glow was hidden behind the
-    -- opaque bar background. Anchoring to the fill also supports secret values.
-    local fill = bar:GetStatusBarTexture()
-    if bar.CreateMaskTexture and fill.AddMaskTexture then
-        local mask = bar:CreateMaskTexture()
-        mask:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-        mask:SetAllPoints(fill)
-        fill:AddMaskTexture(mask)
-        bar.roundMask = mask
-    end
-    bar.neonGlow = bar:CreateTexture(nil, "ARTWORK", nil, 2)
-    bar.neonGlow:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatGlow")
-    bar.neonGlow:SetPoint("TOPLEFT", fill, "TOPLEFT", -4, 4)
-    bar.neonGlow:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT", 4, -4)
-    bar.neonGlow:SetBlendMode("ADD")
-
-    bar.neonEdge = bar:CreateTexture(nil, "ARTWORK", nil, 3)
-    bar.neonEdge:SetPoint("TOPLEFT", fill, "TOPLEFT", 0, 0)
-    bar.neonEdge:SetPoint("TOPRIGHT", fill, "TOPRIGHT", 0, 0)
-    bar.neonEdge:SetHeight(1)
-
-    local topLine = bar:CreateTexture(nil, "OVERLAY")
-    topLine:SetPoint("TOPLEFT", 0, 0)
-    topLine:SetPoint("TOPRIGHT", 0, 0)
-    topLine:SetHeight(1)
-    topLine:SetColorTexture(1, 1, 1, 0.07)
+    Theme.SkinBar(bar)
 
     bar.nameText = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     bar.nameText:SetPoint("LEFT", bar, "LEFT", 4, 0)
@@ -1748,11 +1719,7 @@ local function RefreshBarsImpl()
         end
         bar.showedSecret = hidden
         local r, g, b = GetBarColor(entry)
-        bar:SetStatusBarColor(r, g, b)
-        bar.neonGlow:SetVertexColor(r, g, b, db.glowIntensity)
-        bar.neonGlow:SetShown(db.showGlow)
-        bar.neonEdge:SetColorTexture(r, g, b, 0.95)
-        bar.neonEdge:SetShown(db.showGlow)
+        Theme.PaintBar(bar, r, g, b, db.showGlow, db.glowIntensity)
         if entry.secretName then
             if not pcall(bar.nameText.SetText, bar.nameText, entry.secretName) then
                 bar.nameText:SetText(entry.unit)
@@ -1874,15 +1841,16 @@ neonStripe:SetSize(3, 13)
 neonStripe:SetPoint("TOPLEFT", 6, -7)
 function ORF.ApplyTheme()
     local c = db.themeColor
-    neonBack:SetVertexColor(0.025, 0.03, 0.04, db.backgroundOpacity)
-    neonRing:SetVertexColor(c.r, c.g, c.b, 0.7)
-    neonGlow:SetVertexColor(c.r, c.g, c.b, db.glowIntensity)
+    local panel = Theme.colors.panel
+    neonBack:SetVertexColor(panel[1], panel[2], panel[3], db.backgroundOpacity)
+    neonRing:SetVertexColor(c.r, c.g, c.b, 0.24)
+    neonGlow:SetVertexColor(c.r, c.g, c.b, db.glowIntensity * 0.25)
     neonGlow:SetShown(db.showGlow)
     neonStripe:SetColorTexture(c.r, c.g, c.b, 1)
 end
 ORF.ApplyTheme()
 ORF.frame:SetPoint(db.point, UIParent, db.relPoint, db.x, db.y)
-ORF.frame:SetFrameStrata("HIGH")
+Theme.ApplyMeterLayer(ORF.frame)
 ORF.frame:SetClampedToScreen(true)
 ORF.frame:SetMovable(true)
 ORF.frame:EnableMouse(true)
@@ -1900,6 +1868,7 @@ ORF.title:SetPoint("TOPRIGHT", ORF.frame, "TOPRIGHT", -FRAME_PADDING - 2, -8)
 ORF.title:SetJustifyH("CENTER")
 ORF.title:SetWordWrap(false)
 ORF.title:SetText(L.TITLE)
+ORF.title:SetTextColor(unpack(Theme.colors.text))
 
 ORF.headerName = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 ORF.headerName:SetJustifyH("LEFT")
@@ -1913,6 +1882,9 @@ ORF.headerTPS = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"
 ORF.headerTPS:SetJustifyH("RIGHT")
 ORF.headerTPS:SetText(L.HEADER_TPS)
 ORF.headerTPS:Hide()
+for _, header in ipairs({ORF.headerName, ORF.headerPct, ORF.headerTPS}) do
+    header:SetTextColor(unpack(Theme.colors.muted))
+end
 
 ORF.emptyText = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 ORF.emptyText:SetJustifyH("CENTER")
