@@ -1,0 +1,17 @@
+## Interface: 16001
+## Interface-Classic: 16001
+## Title: OmenReloadedForever
+## Notes: Lightweight threat meter for WoW Forever, in the style of the classic Omen (standalone rewrite, not a fork).
+## Notes-zhTW: 現代風格的仇恨監測與警報。
+## Notes-zhCN: 现代风格的仇恨监测与警报。
+## Notes-deDE: Schlanker Threat-Meter fuer WoW Forever, im Stil des klassischen Omen (eigenstaendige Neuentwicklung, kein Fork).
+## Notes-frFR: Compteur de menace léger pour WoW Forever, dans le style du classique Omen (développement indépendant, pas un fork).
+## Notes-esES: Medidor de amenaza ligero para WoW Forever, al estilo del clásico Omen (desarrollo independiente, no es un fork).
+## Notes-esMX: Medidor de amenaza ligero para WoW Forever, al estilo del clásico Omen (desarrollo independiente, no es un fork).
+## Author: Cryptotaxi
+## Version: 1.0.3
+## SavedVariables: OmenReloadedForeverDB
+## IconTexture: Interface\Icons\Spell_Nature_Reincarnation
+
+Locale.lua
+OmenReloadedForever.lua

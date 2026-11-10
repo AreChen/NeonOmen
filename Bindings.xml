@@ -1,0 +1,11 @@
+<Bindings>
+	<Binding name="ORF_TOGGLE" header="OMENRELOADEDFOREVER">
+		OmenReloadedForever_Toggle()
+	</Binding>
+	<Binding name="ORF_TOGGLEFOCUS">
+		OmenReloadedForever_ToggleFocus()
+	</Binding>
+	<Binding name="ORF_TESTMODE">
+		OmenReloadedForever_ToggleTestMode()
+	</Binding>
+</Bindings>
