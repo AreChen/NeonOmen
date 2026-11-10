@@ -5,7 +5,7 @@ from lupa.lua51 import LuaRuntime
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def addon(locale="enUS", saved="{}", modern=True):
+def addon(locale="enUS", saved="{}", modern=True, native_settings=False):
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(r'''
         frames = {}; ns = {}; messages = {}; timers = {}; combat = false
@@ -38,10 +38,13 @@ def addon(locale="enUS", saved="{}", modern=True):
         end
         function M:CreateMaskTexture() return CreateFrame('MaskTexture',nil,self) end
         function M:AddMaskTexture(mask) self.mask=mask end
-        function M:CreateFontString() return CreateFrame('FontString',nil,self) end
-        function M:SetSize(w,h) self.width=w;self.height=h end
-        function M:SetWidth(w) self.width=w end
-        function M:SetHeight(h) self.height=h end
+        function M:CreateFontString(_,layer,font)
+            local f=CreateFrame('FontString',nil,self);f.layer=layer;f.fontTemplate=font;return f
+        end
+        function M:SetSize(w,h) self.width=w;self.height=h;self.explicitWidth=true;self.explicitHeight=true end
+        function M:SetWidth(w) self.width=w;self.explicitWidth=true end
+        function M:SetHeight(h) self.height=h;self.explicitHeight=true end
+        function M:SetJustifyH(justify) self.justify=justify end
         function M:GetWidth() return self.width end
         function M:GetHeight() return self.height end
         function M:SetPoint(...) self.points[#self.points+1]={...} end
@@ -57,12 +60,17 @@ def addon(locale="enUS", saved="{}", modern=True):
         function M:SetScale(s) self.scale=s end
         function M:GetEffectiveScale() return self.scale or 1 end
         function M:SetAlpha(a) self.alpha=a end
-        function M:SetText(t) self.text=t end
+        function M:SetText(t) self.text=t;if self.fontString then self.fontString:SetText(t) end end
+        function M:SetFontString(f) self.fontString=f end
+        function M:GetStringHeight() return 12 end
         function M:SetFormattedText(fmt, ...) self.text=string.format(fmt,...) end
         function M:SetTextColor(...) self.textColor={...} end
         function M:GetFont() return 'Fonts/ARIALN.TTF',12 end
         function M:SetFont(...) self.font={...} end
         function M:SetTexture(t) self.texture=t end
+        function M:SetTextureSliceMargins(...) self.sliceMargins={...} end
+        function M:SetThumbTexture(t) self.thumb=self:CreateTexture();self.thumb:SetTexture(t) end
+        function M:GetThumbTexture() return self.thumb end
         function M:SetVertexColor(...) self.vertex={...} end
         function M:SetColorTexture(...) self.color={...} end
         function M:SetGradient(direction, from, to)
@@ -131,12 +139,24 @@ def addon(locale="enUS", saved="{}", modern=True):
         end
         function issecretvalue(v) return type(v)=='table' and v.secret==true end
         function UIDropDownMenu_SetWidth() end
-        function UIDropDownMenu_Initialize() end
+        function UIDropDownMenu_Initialize(menu,fn) menu.initialize=fn end
         function UIDropDownMenu_SetSelectedValue() end
         function UIDropDownMenu_SetText() end
         function UIDropDownMenu_CreateInfo() return {} end
-        function UIDropDownMenu_AddButton() end
+        dropdownEntries={}
+        function UIDropDownMenu_AddButton(info) dropdownEntries[#dropdownEntries+1]=info end
+        function ToggleDropDownMenu(_,_,menu) dropdownEntries={};menu.initialize(menu,1) end
+        function PlaySoundFile(id) playedSound=id end
+        function PlaySound(id) playedSound=id end
         UIParent=CreateFrame('Frame'); Minimap=CreateFrame('Frame')
+        UIParent:SetSize(1280,720)
+        ColorPickerFrame=CreateFrame('Frame')
+        function ColorPickerFrame:GetColorRGB() return self.r,self.g,self.b end
+        function ColorPickerFrame:SetColorRGB(r,g,b) self.r=r;self.g=g;self.b=b end
+        function ColorPickerFrame:SetupColorPickerAndShow(info)
+            self.info=info;self:SetColorRGB(info.r,info.g,info.b);self:Show()
+        end
+        function GetAddOnMetadata(_,key) if key=='Version' then return 'test-version' end end
         GameTooltip=CreateFrame('Frame'); UISpecialFrames={}; SlashCmdList={}
         C_Timer={After=function(_,fn) timers[#timers+1]=fn end,NewTicker=function() end}
         Enum={UITextureSliceMode={Stretched=1}}
@@ -147,6 +167,17 @@ def addon(locale="enUS", saved="{}", modern=True):
             CreateColor=nil; methods.SetGradient=nil
             methods.CreateMaskTexture=nil; methods.AddMaskTexture=nil
             methods.SetTextureSliceMargins=nil; methods.SetFixedFrameStrata=nil
+            ColorPickerFrame.SetupColorPickerAndShow=nil
+        ''')
+    if native_settings:
+        lua.execute('''
+            Settings={
+                RegisterCanvasLayoutCategory=function(panel,name)
+                    nativeSettingsPanel=panel;nativeSettingsName=name
+                    return {GetID=function() return 7 end}
+                end,
+                RegisterAddOnCategory=function() nativeSettingsRegistered=true end,
+            }
         ''')
     lua.globals().GetLocale = lambda: locale
     for entry in (ROOT / "NeonOmen.toc").read_text().splitlines():

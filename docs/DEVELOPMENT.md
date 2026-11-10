@@ -7,6 +7,17 @@ and `NeonOmen.toc`. Media paths must use this directory too. The historical
 WoW now loads that table from `SavedVariables/NeonOmen.lua`; see the upgrade steps
 in the README for migrating the old file.
 
+`Options.lua` receives settings getters and actions from the core. It reads the
+current DB on every interaction, including after SavedVariables replacement.
+`UI/Widgets.lua` owns the styled switches and sliders; synchronization must never
+write back to settings or trigger geometry changes. `UI/OptionsLocale.lua` provides
+English fallback plus Simplified and Traditional Chinese console text.
+
+The standalone settings frame uses DIALOG; the meter remains LOW. The native
+settings category is a launcher, so the full console keeps its navigation and
+preview layout. The sample uses the actual bar skin and color-selection function
+without joining the threat scan or enabling the main meter's test mode.
+
 ## Automated checks
 
 ```sh
@@ -30,5 +41,7 @@ They cannot establish actual client rendering, taint behavior or combat compatib
 - Resize the meter, change row height and UI scale, and enable upward growth and auto-collapse. Check that the fill, shading, edge and text stay aligned.
 - Enter a party/dungeon with protected threat values; confirm bars update without Lua errors or blocked actions. Return to ordinary values and confirm smoothing resumes.
 - Enter combat, request settings, and leave combat; settings should open afterward.
+- Open every console page, scroll its cards, and test switches, slider steps, presets, color-picker apply/cancel, class filters and every alert sound. The preview must update immediately while preserving warning colors.
+- Open settings from the minimap, slash commands and native launcher. Test Escape, close/reopen, dragging, UI scaling and small screens in English and Chinese. Verify scrollbar behavior and the fixed preview stay usable.
 
 Keep the version prerelease until these checks pass. No release tag is created by the packaging tool.

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.4-alpha.3 — 2026-11-10
+
+- Rebuild settings in NeonCast's visual style: numbered sidebar navigation, dark cards, accent wash, neon switches and numeric sliders with step buttons.
+- Organize all existing controls into appearance, window layout, data labels, visibility and threat alerts, each with an independent scroll area.
+- Add five matching accent presets and a fixed preview using the actual bar skin and threat-color rules. The sample does not enable the main meter's test mode.
+- Open the standalone console directly from slash commands and the minimap; retain a native system-settings launcher and deferred opening after combat.
+- Add width, window-height and spacing controls; preserve position reset, class filters, sound selection and custom colors with cancellation.
+- Add English/Chinese console text and interaction checks for navigation, geometry, themes, samples and the native launcher. In-game rendering still requires verification.
+
 ## 1.0.4-alpha.2 — 2026-11-10
 
 - Use `NeonOmen/` for the installation package, with `NeonOmen.toc`, `NeonOmen.lua` and matching media paths.

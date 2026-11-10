@@ -5,6 +5,7 @@ ns.Theme = Theme
 
 Theme.colors = {
     panel = {0.025, 0.035, 0.062},
+    card = {0.045, 0.060, 0.092},
     inset = {0.018, 0.027, 0.045},
     text = {0.90, 0.94, 1.00},
     muted = {0.46, 0.55, 0.68},
@@ -20,12 +21,13 @@ function Theme.ApplyMeterLayer(frame)
     if frame.SetFixedFrameStrata then frame:SetFixedFrameStrata(true) end
 end
 
-local function Surface(bar, asset, layer, sublevel)
+local function Surface(bar, asset, layer, sublevel, margins)
     local texture = bar:CreateTexture(nil, layer, nil, sublevel)
     texture:SetAllPoints()
     if texture.SetTextureSliceMargins then
         texture:SetTexture(MEDIA .. asset)
-        texture:SetTextureSliceMargins(8, 8, 8, 8)
+        margins = margins or 8
+        texture:SetTextureSliceMargins(margins, margins, margins, margins)
         if texture.SetTextureSliceMode and Enum and Enum.UITextureSliceMode then
             texture:SetTextureSliceMode(Enum.UITextureSliceMode.Stretched)
         end
@@ -35,19 +37,64 @@ local function Surface(bar, asset, layer, sublevel)
     return texture
 end
 
-local function Gradient(texture, from, to)
+local function Gradient(texture, from, to, direction)
+    direction = direction or "VERTICAL"
     texture:SetColorTexture(1, 1, 1, 1)
     if texture.SetGradient and CreateColor then
-        local ok = pcall(texture.SetGradient, texture, "VERTICAL",
+        local ok = pcall(texture.SetGradient, texture, direction,
             CreateColor(unpack(from)), CreateColor(unpack(to)))
         if ok then return end
     end
     if texture.SetGradientAlpha then
-        local ok = pcall(texture.SetGradientAlpha, texture, "VERTICAL",
+        local ok = pcall(texture.SetGradientAlpha, texture, direction,
             from[1], from[2], from[3], from[4], to[1], to[2], to[3], to[4])
         if ok then return end
     end
     texture:SetColorTexture(from[1], from[2], from[3], (from[4] + to[4]) / 2)
+end
+Theme.Gradient = Gradient
+
+Theme.presets = {
+    {key="UI_GLACIER", r=0.20, g=0.82, b=1.00},
+    {key="UI_AMETHYST", r=0.64, g=0.48, b=1.00},
+    {key="UI_JADE", r=0.24, g=0.91, b=0.69},
+    {key="UI_EMBER", r=1.00, g=0.57, b=0.26},
+    {key="UI_ROSE", r=1.00, g=0.36, b=0.62},
+}
+
+function Theme.Texture(parent, layer, color, alpha, sublevel)
+    local texture = parent:CreateTexture(nil, layer or "BACKGROUND", nil, sublevel)
+    texture:SetColorTexture(color[1], color[2], color[3], alpha or 1)
+    return texture
+end
+
+function Theme.Surface(parent, color, alpha)
+    local bg = Surface(parent, "NeonBack", "BACKGROUND", -2, 16)
+    bg:SetVertexColor(color[1], color[2], color[3], alpha or 1)
+    local edge = Surface(parent, "NeonRing", "BORDER", 0, 16)
+    edge:SetShown(edge.SetTextureSliceMargins ~= nil)
+    return bg, edge
+end
+
+function Theme.Button(parent, text)
+    local button = CreateFrame("Button", nil, parent)
+    local bg, edge = Theme.Surface(button, {0.065, 0.085, 0.12}, 1)
+    local caption = button:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    caption:SetPoint("CENTER")
+    caption:SetWordWrap(false)
+    caption:SetText(text or "")
+    button:SetFontString(caption)
+    button.caption = caption
+    local hover = Theme.Texture(button, "HIGHLIGHT", {1, 1, 1}, 0.06)
+    hover:SetAllPoints()
+    function button:Paint(c)
+        local active = self.selected
+        bg:SetVertexColor(active and c.r*0.15 or 0.065, active and c.g*0.15 or 0.085,
+            active and c.b*0.15 or 0.12, 1)
+        edge:SetVertexColor(c.r, c.g, c.b, active and 0.75 or 0.18)
+        caption:SetTextColor(active and c.r or 0.9, active and c.g or 0.94, active and c.b or 1)
+    end
+    return button
 end
 
 local function UpdateFillVisibility(bar, value)

@@ -9,10 +9,13 @@
 ## Notes-esES: Medidor de amenaza ligero para WoW Forever, al estilo del clásico Omen (desarrollo independiente, no es un fork).
 ## Notes-esMX: Medidor de amenaza ligero para WoW Forever, al estilo del clásico Omen (desarrollo independiente, no es un fork).
 ## Author: Cryptotaxi
-## Version: 1.0.4-alpha.2
+## Version: 1.0.4-alpha.3
 ## SavedVariables: OmenReloadedForeverDB
 ## IconTexture: Interface\Icons\Spell_Nature_Reincarnation
 
 Locale.lua
 UI/Theme.lua
+UI/OptionsLocale.lua
+UI/Widgets.lua
+Options.lua
 NeonOmen.lua
