@@ -78,39 +78,70 @@ function ns.Options.Create(api)
         description:SetText(L[definitions[index][2]])
         for i, page in ipairs(pages) do
             page.scroll:SetShown(i == index)
+            page.scrollbar:SetShown(i == index and -page.cursor>418)
             page.nav.selected = i == index
             page.nav:Paint(accent())
             page.marker:SetShown(i == index)
         end
     end
     for i, definition in ipairs(definitions) do
-        local scroll = CreateFrame("ScrollFrame", "NeonOmenOptionsScroll"..i, f, "UIPanelScrollFrameTemplate")
-        scroll:SetPoint("TOPLEFT", 192, -84); scroll:SetSize(568, 418)
+        local scroll = CreateFrame("ScrollFrame", "NeonOmenOptionsScroll"..i, f)
+        scroll:SetPoint("TOPLEFT", 192, -84); scroll:SetSize(562, 418)
         local content = CreateFrame("Frame", nil, scroll)
         content:SetSize(562, 418); scroll:SetScrollChild(content)
-        local scrollbar=scroll.ScrollBar or _G["NeonOmenOptionsScroll"..i.."ScrollBar"]
-        if scrollbar then
-            scrollbar:SetWidth(8)
-            if scrollbar.ScrollUpButton then scrollbar.ScrollUpButton:Hide() end
-            if scrollbar.ScrollDownButton then scrollbar.ScrollDownButton:Hide() end
-            local thumb=scrollbar:GetThumbTexture()
-            if thumb then
-                thumb:SetTexture("Interface\\Buttons\\WHITE8x8");thumb:SetSize(4,28)
-                themed[#themed+1]=function() local c=accent();thumb:SetVertexColor(c.r,c.g,c.b,0.65) end
-            end
+        -- Own the scrollbar instead of inheriting client-specific gold arrow
+        -- buttons. All scroll ranges come from this panel's public layout.
+        local scrollbar=CreateFrame("Slider",nil,f)
+        scrollbar:SetPoint("TOPLEFT",scroll,"TOPRIGHT",10,-4)
+        scrollbar:SetPoint("BOTTOMLEFT",scroll,"BOTTOMRIGHT",10,4)
+        scrollbar:SetWidth(8);scrollbar:SetOrientation("VERTICAL")
+        scrollbar:SetMinMaxValues(0,0);scrollbar:SetValueStep(1)
+        scrollbar:SetThumbTexture("Interface\\Buttons\\WHITE8x8")
+        local thumb=scrollbar:GetThumbTexture();thumb:SetSize(4,36)
+        local track=T.Texture(scrollbar,"BACKGROUND",{1,1,1},0.07)
+        track:SetPoint("TOP");track:SetPoint("BOTTOM");track:SetWidth(2)
+        local range, busy=0,false
+        local function setOffset(value)
+            value=math.max(0,math.min(range,value))
+            busy=true;scrollbar:SetValue(value);busy=false
+            scroll:SetVerticalScroll(value)
         end
-        local nav = button(side, "")
-        nav:SetSize(156, 40); nav:SetPoint("TOPLEFT", 8, -104-(i-1)*50)
-        W.Label(nav, string.format("%02d", i), 12, -14, 22, T.colors.muted)
-        nav.caption:ClearAllPoints(); nav.caption:SetPoint("LEFT", 40, 0)
-        nav:SetText(L[definition[1]])
+        scrollbar:SetScript("OnValueChanged",function(_,value) if not busy then setOffset(value) end end)
+        local function wheel(_,delta) setOffset(scrollbar:GetValue()-delta*36) end
+        scroll:EnableMouseWheel(true);scroll:SetScript("OnMouseWheel",wheel)
+        scrollbar:EnableMouseWheel(true);scrollbar:SetScript("OnMouseWheel",wheel)
+        local function updateRange(height)
+            range=math.max(0,height-418)
+            scrollbar:SetMinMaxValues(0,range)
+            thumb:SetHeight(math.max(28,410*math.min(1,418/height)))
+            if scroll.UpdateScrollChildRect then scroll:UpdateScrollChildRect() end
+            setOffset(scrollbar:GetValue() or 0)
+            scrollbar:SetShown(range>0 and selected==i)
+        end
+        local nav = CreateFrame("Button",nil,side)
+        nav:SetSize(156,42);nav:SetPoint("TOPLEFT",8,-104-(i-1)*50)
+        local caption=nav:CreateFontString(nil,"OVERLAY","GameFontHighlight")
+        caption:SetPoint("LEFT",18,0);caption:SetPoint("RIGHT",-14,0)
+        caption:SetJustifyH("LEFT");caption:SetWordWrap(false)
+        caption:SetText(L[definition[1]])
+        nav:SetFontString(caption);nav.caption=caption
+        local selectedWash=nav:CreateTexture(nil,"BACKGROUND")
+        selectedWash:SetAllPoints()
+        local hover=T.Texture(nav,"HIGHLIGHT",{1,1,1},0.035);hover:SetAllPoints()
         local marker = T.Texture(nav, "ARTWORK", {1, 1, 1}, 1)
-        marker:SetPoint("TOPLEFT", 1, -9); marker:SetPoint("BOTTOMLEFT", 1, 9); marker:SetWidth(2)
+        marker:SetPoint("BOTTOMLEFT",18,5);marker:SetPoint("BOTTOMRIGHT",-14,5);marker:SetHeight(1)
+        function nav:Paint(c)
+            caption:SetTextColor(self.selected and c.r or 0.65,self.selected and c.g or 0.72,self.selected and c.b or 0.82)
+            selectedWash:SetShown(self.selected)
+            T.Gradient(selectedWash,{c.r,c.g,c.b,0.10},{c.r,c.g,c.b,0},"HORIZONTAL")
+            marker:SetColorTexture(c.r,c.g,c.b,0.40)
+        end
         themed[#themed+1] = function()
-            local c = accent(); marker:SetColorTexture(c.r, c.g, c.b, 1)
+            local c = accent();nav:Paint(c);thumb:SetVertexColor(c.r,c.g,c.b,0.40)
         end
         nav:SetScript("OnClick", function() selectPage(i) end)
-        pages[i] = {scroll=scroll, content=content, nav=nav, marker=marker, cursor=0}
+        pages[i] = {scroll=scroll, content=content, nav=nav, marker=marker, cursor=0,
+            scrollbar=scrollbar,UpdateRange=updateRange}
     end
 
     local function card(page, heading)
@@ -131,6 +162,7 @@ function ns.Options.Create(api)
             local height = -self.cursor+12
             self:SetHeight(height); page.cursor = page.cursor-height-12
             page.content:SetHeight(math.max(418, -page.cursor))
+            page.UpdateRange(math.max(418,-page.cursor))
         end
         return c
     end
@@ -334,7 +366,6 @@ function ns.Options.Create(api)
     for i,entry in ipairs(samples) do
         local bar=CreateFrame("StatusBar",nil,preview)
         bar:SetSize(562,16);bar:SetPoint("TOPLEFT",12,-25-(i-1)*19)
-        bar:SetStatusBarTexture("Interface\\AddOns\\NeonOmen\\Media\\ThreatGradient")
         bar:SetMinMaxValues(0,100);bar:SetValue(entry.displayPct);T.SkinBar(bar)
         bar.nameText=W.Label(bar,entry.name,6,-2,360)
         bar.pctText=W.Label(bar,string.format("%d%%",entry.displayPct),440,-2,116)

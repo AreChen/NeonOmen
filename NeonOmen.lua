@@ -1238,7 +1238,6 @@ end
 local function CreateBar(index)
     local bar = CreateFrame("StatusBar", "OmenReloadedForeverBar" .. index, ORF.frame)
     bar:SetSize(db.width, db.height)
-    bar:SetStatusBarTexture("Interface\\AddOns\\NeonOmen\\Media\\ThreatGradient")
     bar:SetMinMaxValues(0, 100)
     bar:SetValue(0)
     bar:Hide()
@@ -1836,9 +1835,6 @@ if neonGlow.SetTextureSliceMargins then
         neonGlow:SetTextureSliceMode(Enum.UITextureSliceMode.Stretched)
     end
 end
-local neonStripe = ORF.frame:CreateTexture(nil, "ARTWORK")
-neonStripe:SetSize(3, 13)
-neonStripe:SetPoint("TOPLEFT", 6, -7)
 function ORF.ApplyTheme()
     local c = db.themeColor
     local panel = Theme.colors.panel
@@ -1846,7 +1842,6 @@ function ORF.ApplyTheme()
     neonRing:SetVertexColor(c.r, c.g, c.b, 0.24)
     neonGlow:SetVertexColor(c.r, c.g, c.b, db.glowIntensity * 0.25)
     neonGlow:SetShown(db.showGlow)
-    neonStripe:SetColorTexture(c.r, c.g, c.b, 1)
 end
 ORF.ApplyTheme()
 ORF.frame:SetPoint(db.point, UIParent, db.relPoint, db.x, db.y)

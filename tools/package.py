@@ -16,9 +16,6 @@ RUNTIME_FILES = (
     "Media/NeonBack.tga",
     "Media/NeonRing.tga",
     "Media/NeonGlow.tga",
-    "Media/ThreatGradient.tga",
-    "Media/ThreatMask.tga",
-    "Media/ThreatGlow.tga",
 )
 
 

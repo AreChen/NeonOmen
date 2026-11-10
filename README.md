@@ -8,7 +8,7 @@ A threat meter for World of Warcraft Forever, customized with a neon-style inter
 - Customizable theme color, glow, and window background opacity.
 - Test mode for previewing the display.
 - A low-layer meter that stays below system settings and dialogs.
-- NeonCast-inspired dark tracks, shaded fills, restrained glow and a clear progress edge.
+- Satin threat bars with fine horizontal reflections, straight fill ends and preserved warning colors.
 - A NeonCast-style settings console with five pages, accent presets, styled controls and live sample bars.
 
 ## Installation
@@ -19,10 +19,11 @@ The Actions artifact also extracts directly to this directory, without a nested 
 
 Use `/neonomen` (or `/orf`) to open settings and `/orf test` to toggle test mode.
 
-`1.0.4-alpha.3` is a development build awaiting verification in the Forever client.
+`1.0.4-alpha.4` is a development build awaiting verification in the Forever client.
 
 The settings console opens directly from `/neonomen`, `/orf` or the minimap button.
-The system settings category also provides a button to open it. Appearance, window
+The system settings category also provides a button to open it. The sidebar uses
+full-width text tabs with a quiet selected underline. Appearance, window
 layout, data labels, visibility and alerts have separate pages; their options scroll
 independently while the sample preview remains visible. The five accent presets
 match NeonCast. Sample bars do not enable the main meter's test mode; use the

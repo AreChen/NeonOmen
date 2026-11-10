@@ -27,11 +27,12 @@ def test_fill_decorations_hide_at_zero_and_follow_the_native_texture():
     lua.execute('''
         local bar=OmenReloadedForeverBar1
         bar:SetValue(0)
-        assert(not bar.neonEdge:IsShown() and not bar.neonGlow:IsShown())
+        assert(not bar.materialTop:IsShown() and not bar.neonGlow:IsShown())
         assert(not bar.neonSheen:IsShown() and not bar.neonShade:IsShown())
         bar:SetValue(45)
-        assert(bar.neonEdge:IsShown() and bar.neonSheen:IsShown())
-        for _,texture in ipairs({bar.neonEdge,bar.neonSheen,bar.neonShade,bar.neonGlow}) do
+        assert(bar.materialTop:IsShown() and bar.neonSheen:IsShown())
+        for _,texture in ipairs(bar.materialLayers) do
+            if texture.allPoints then assert(texture.allPoints==bar:GetStatusBarTexture()) end
             for _,point in ipairs(texture.points) do assert(point[2]==bar:GetStatusBarTexture()) end
         end
         -- No new per-frame material animation is needed: the existing fill
@@ -51,14 +52,14 @@ def test_secret_values_are_never_compared_or_used_for_geometry(modern):
             __add=forbidden,__sub=forbidden,__mul=forbidden,__div=forbidden})
         bar:SetValue(value)
         ns.Theme.PaintBar(bar,1,0.2,0.1,true,0.8)
-        assert(bar.neonHasFill and bar.neonEdge:IsShown())
+        assert(bar.neonHasFill and bar.materialTop:IsShown())
         assert(bar:GetValue()==value)
         bar:SetValue(0)
-        assert(not bar.neonEdge:IsShown())
+        assert(not bar.materialTop:IsShown())
     ''')
 
 
-def test_saved_glow_setting_keeps_progress_edge_and_warning_colors():
+def test_saved_glow_setting_keeps_material_and_warning_colors():
     lua = addon(saved="{showGlow=false, glowIntensity=1, useClassColors=true}")
     preview(lua)
     lua.execute('''
@@ -67,13 +68,32 @@ def test_saved_glow_setting_keeps_progress_edge_and_warning_colors():
             local bar=_G['OmenReloadedForeverBar'..i]
             if bar and bar:IsShown() then
                 assert(not bar.neonGlow:IsShown())
-                assert(bar.neonEdge:IsShown())
+                assert(bar.materialTop:IsShown())
                 local c=bar.barColor
                 if c[1]==1 and c[2]==1 and c[3]==0 then sawYellow=true end
                 if c[1]==1 and c[2]==0.2 and c[3]==0.1 then sawRed=true end
             end
         end
         assert(sawYellow and sawRed)
+    ''')
+
+
+@pytest.mark.parametrize("height", [10, 16, 40])
+@pytest.mark.parametrize("width", [100, 600])
+def test_short_and_wide_rows_have_no_stretched_mask_or_vertical_cap(width, height):
+    lua = addon(saved=f"{{width={width},height={height},frameHeight=900}}")
+    preview(lua)
+    lua.execute('''
+        for i=1,3 do
+            local bar=_G['OmenReloadedForeverBar'..i]
+            assert(bar.neonEdge==nil and bar.roundMask==nil)
+            assert(bar:GetStatusBarTexture().mask==nil)
+            assert(bar:GetStatusBarTexture().texture=='Interface\\\\Buttons\\\\WHITE8x8')
+            assert(bar.neonGlow.allPoints==bar:GetStatusBarTexture())
+            bar:SetValue(0)
+            for _,layer in ipairs(bar.materialLayers) do assert(not layer:IsShown()) end
+            assert(not bar.neonGlow:IsShown())
+        end
     ''')
 
 

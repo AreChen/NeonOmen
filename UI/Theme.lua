@@ -98,68 +98,74 @@ function Theme.Button(parent, text)
 end
 
 local function UpdateFillVisibility(bar, value)
-    -- Forever can supply secret threat values. Only the native StatusBar
-    -- interprets their size; decorations follow its texture without reading it.
+    -- Secret values are interpreted only by the native StatusBar. Every
+    -- material layer follows its texture; none reads the resulting width.
     local secret = issecretvalue and issecretvalue(value)
     local visible = secret or (type(value) == "number" and value > 0)
     bar.neonHasFill = visible
-    bar.neonSheen:SetShown(visible)
-    bar.neonShade:SetShown(visible)
-    bar.neonEdge:SetShown(visible)
+    for _, layer in ipairs(bar.materialLayers) do layer:SetShown(visible) end
     bar.neonGlow:SetShown(visible and bar.neonShowGlow or false)
 end
 
 function Theme.SkinBar(bar)
-    local bg = Surface(bar, "NeonBack", "BACKGROUND", -2)
-    bg:SetVertexColor(unpack(Theme.colors.inset))
-    local border = Surface(bar, "NeonRing", "BORDER", 0)
-    border:SetVertexColor(0.46, 0.55, 0.68, 0.12)
-    border:SetShown(border.SetTextureSliceMargins ~= nil)
-
+    -- A stretched rounded mask turns a long, short bar into an uneven capsule.
+    -- Use a native rectangular fill and contained materials at every row size.
+    bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8x8")
     local fill = bar:GetStatusBarTexture()
-    if bar.CreateMaskTexture and fill.AddMaskTexture then
-        local mask = bar:CreateMaskTexture()
-        mask:SetTexture(MEDIA .. "ThreatMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-        mask:SetAllPoints(fill)
-        fill:AddMaskTexture(mask)
-        bar.roundMask = mask
+    local bg = Theme.Texture(bar, "BACKGROUND", Theme.colors.inset, 0.94, -2)
+    bg:SetAllPoints()
+    local trackTop = Theme.Texture(bar, "BORDER", {1, 1, 1}, 0.035)
+    trackTop:SetPoint("TOPLEFT"); trackTop:SetPoint("TOPRIGHT"); trackTop:SetHeight(1)
+    local trackBottom = Theme.Texture(bar, "BORDER", {0, 0, 0}, 0.28)
+    trackBottom:SetPoint("BOTTOMLEFT"); trackBottom:SetPoint("BOTTOMRIGHT"); trackBottom:SetHeight(1)
+
+    bar.materialLayers = {}
+    local function layer(sublevel)
+        local texture = bar:CreateTexture(nil, "ARTWORK", nil, sublevel)
+        texture:SetAllPoints(fill)
+        bar.materialLayers[#bar.materialLayers+1] = texture
+        return texture
     end
+    bar.materialDepth = layer(1)
+    Gradient(bar.materialDepth, {0,0,0,0.28}, {0,0,0,0.02}, "HORIZONTAL")
+    bar.neonShade = layer(1)
+    Gradient(bar.neonShade, {0,0,0,0.28}, {0,0,0,0.035})
+    bar.neonSheen = layer(2)
+    Gradient(bar.neonSheen, {1,1,1,0}, {1,1,1,0.08})
 
-    -- A restrained reflection and lower shade add depth without washing out
-    -- warning colors. Both follow the native fill during animation and resize.
-    bar.neonSheen = bar:CreateTexture(nil, "ARTWORK", nil, 1)
-    bar.neonSheen:SetPoint("TOPLEFT", fill, "TOPLEFT")
-    bar.neonSheen:SetPoint("BOTTOMRIGHT", fill, "RIGHT")
-    Gradient(bar.neonSheen, {1, 1, 1, 0}, {1, 1, 1, 0.16})
-
-    bar.neonShade = bar:CreateTexture(nil, "ARTWORK", nil, 1)
-    bar.neonShade:SetPoint("TOPLEFT", fill, "LEFT")
-    bar.neonShade:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT")
-    Gradient(bar.neonShade, {0, 0, 0, 0.20}, {0, 0, 0, 0})
-    if bar.roundMask then
-        bar.neonSheen:AddMaskTexture(bar.roundMask)
-        bar.neonShade:AddMaskTexture(bar.roundMask)
+    -- Fine horizontal brushing and a restrained top reflection give the fill
+    -- depth without a bright vertical end-cap or a glow extending past it.
+    for i, anchor in ipairs({"TOP", "CENTER", "BOTTOM"}) do
+        local grain = layer(2)
+        grain:ClearAllPoints()
+        local left = anchor=="TOP" and "TOPLEFT" or anchor=="BOTTOM" and "BOTTOMLEFT" or "LEFT"
+        local right = anchor=="TOP" and "TOPRIGHT" or anchor=="BOTTOM" and "BOTTOMRIGHT" or "RIGHT"
+        local offset = anchor=="TOP" and -3 or anchor=="BOTTOM" and 3 or 0
+        grain:SetPoint("LEFT", fill, left, 0, offset)
+        grain:SetPoint("RIGHT", fill, right, 0, offset)
+        grain:SetHeight(1); grain:SetColorTexture(1,1,1,0.030-i*0.004)
     end
+    bar.materialTop = layer(3)
+    bar.materialTop:ClearAllPoints()
+    bar.materialTop:SetPoint("TOPLEFT",fill,"TOPLEFT")
+    bar.materialTop:SetPoint("TOPRIGHT",fill,"TOPRIGHT")
+    bar.materialTop:SetHeight(1); bar.materialTop:SetColorTexture(1,1,1,0.18)
+    local bottom = layer(3)
+    bottom:ClearAllPoints()
+    bottom:SetPoint("BOTTOMLEFT",fill,"BOTTOMLEFT")
+    bottom:SetPoint("BOTTOMRIGHT",fill,"BOTTOMRIGHT")
+    bottom:SetHeight(1); bottom:SetColorTexture(0,0,0,0.18)
 
-    bar.neonGlow = bar:CreateTexture(nil, "ARTWORK", nil, 2)
-    bar.neonGlow:SetTexture(MEDIA .. "ThreatGlow")
-    bar.neonGlow:SetPoint("TOPLEFT", fill, "TOPRIGHT", -5, 3)
-    bar.neonGlow:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT", 5, -3)
-    bar.neonGlow:SetBlendMode("ADD")
-
-    -- The leading edge communicates progress even when decorative glow is off.
-    bar.neonEdge = bar:CreateTexture(nil, "ARTWORK", nil, 3)
-    bar.neonEdge:SetPoint("TOPRIGHT", fill, "TOPRIGHT")
-    bar.neonEdge:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT")
-    bar.neonEdge:SetWidth(1)
+    bar.neonGlow = bar:CreateTexture(nil,"ARTWORK",nil,2)
+    bar.neonGlow:SetAllPoints(fill)
+    Gradient(bar.neonGlow, {1,1,1,0}, {1,1,1,0.14})
     bar:SetScript("OnValueChanged", UpdateFillVisibility)
     UpdateFillVisibility(bar, bar:GetValue())
 end
 
 function Theme.PaintBar(bar, r, g, b, showGlow, intensity)
-    bar:SetStatusBarColor(r, g, b, 0.88)
-    bar.neonEdge:SetColorTexture(0.35 + r * 0.65, 0.35 + g * 0.65, 0.35 + b * 0.65, 0.85)
-    bar.neonGlow:SetVertexColor(r, g, b, intensity * 0.22)
+    bar:SetStatusBarColor(r, g, b, 0.90)
+    bar.neonGlow:SetAlpha(intensity * 0.35)
     bar.neonShowGlow = showGlow and intensity > 0
     bar.neonGlow:SetShown(bar.neonHasFill and bar.neonShowGlow or false)
 end

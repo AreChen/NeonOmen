@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.4-alpha.4 — 2026-11-10
+
+- Replace the narrow numbered sidebar buttons with full-width text tabs, soft selected backgrounds and horizontal underlines; avoid clipped numbers with custom client fonts.
+- Replace client-template scrollbars with a thin styled thumb supporting wheel scrolling, dragging, clamped ranges and per-page scroll positions, without native gold arrows.
+- Remove the stretched rounded threat mask, cylindrical bar texture and vertical progress cap. Use native rectangular fills with directional shading, fine horizontal brushing and a restrained top reflection.
+- Keep all material layers within the native fill and hide them at zero, including while optional glow is disabled. Preserve warning colors and secret-value handling.
+- Remove the meter's decorative title stripe and exclude the obsolete threat bitmaps from installation packages.
+- Add regression coverage for short/wide rows, different heights, complete navigation labels and scroll limits. The client screenshots motivated this change; the new rendering still needs game verification.
+
 ## 1.0.4-alpha.3 — 2026-11-10
 
 - Rebuild settings in NeonCast's visual style: numbered sidebar navigation, dark cards, accent wash, neon switches and numeric sliders with step buttons.

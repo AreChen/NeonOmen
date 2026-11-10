@@ -22,6 +22,7 @@ def addon(locale="enUS", saved="{}", modern=True, native_settings=False):
             'SetOwner','AddLine','SetTexCoord','SetTextureSliceMargins',
             'SetTextureSliceMode','SetOrientation'
         }) do M[key] = noop end
+        M.EnableMouseWheel=noop
         function CreateFrame(kind, name, parent, template)
             local f = setmetatable({kind=kind,name=name,parent=parent,
                 scripts={},events={},points={},shown=true,width=220,height=200}, {__index=M})
@@ -48,7 +49,7 @@ def addon(locale="enUS", saved="{}", modern=True, native_settings=False):
         function M:GetWidth() return self.width end
         function M:GetHeight() return self.height end
         function M:SetPoint(...) self.points[#self.points+1]={...} end
-        function M:ClearAllPoints() self.points={} end
+        function M:ClearAllPoints() self.points={};self.allPoints=nil end
         function M:SetAllPoints(ref) self.allPoints=ref or self.parent end
         function M:GetPoint(i) return unpack(self.points[i or 1]) end
         function M:SetFrameStrata(s) self.strata=s end
@@ -68,6 +69,7 @@ def addon(locale="enUS", saved="{}", modern=True, native_settings=False):
         function M:GetFont() return 'Fonts/ARIALN.TTF',12 end
         function M:SetFont(...) self.font={...} end
         function M:SetTexture(t) self.texture=t end
+        function M:SetOrientation(direction) self.orientation=direction end
         function M:SetTextureSliceMargins(...) self.sliceMargins={...} end
         function M:SetThumbTexture(t) self.thumb=self:CreateTexture();self.thumb:SetTexture(t) end
         function M:GetThumbTexture() return self.thumb end
@@ -90,6 +92,7 @@ def addon(locale="enUS", saved="{}", modern=True, native_settings=False):
         function M:SetChecked(on) self.checked=on end
         function M:GetChecked() return self.checked end
         function M:SetScrollChild(child) self.child=child end
+        function M:SetVerticalScroll(value) self.verticalScroll=value end
         function M:SetScript(event, fn) self.scripts[event]=fn end
         function M:GetScript(event) return self.scripts[event] end
         function M:HookScript(event, fn)

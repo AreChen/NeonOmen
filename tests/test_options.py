@@ -94,3 +94,38 @@ def test_native_settings_launcher_uses_the_same_combat_gate_and_window():
         assert(ui.frame:GetHeight()*ui.frame.scale<=576)
         assert(UISpecialFrames[#UISpecialFrames]=='OmenReloadedForeverOptionsPanel')
     ''')
+
+
+@pytest.mark.parametrize("locale", ["enUS", "zhCN", "zhTW"])
+def test_navigation_uses_full_width_labels_and_pages_scroll_without_native_arrows(locale):
+    lua = addon(locale)
+    lua.execute('''
+        local ui=ns.Options.current
+        SlashCmdList.OMENRELOADEDFOREVER('')
+        for i,page in ipairs(ui.pages) do
+            page.nav.scripts.OnClick()
+            assert(#page.nav.caption.points==2)
+            assert(page.nav.caption.points[1][1]=='LEFT')
+            assert(page.nav.caption.points[2][1]=='RIGHT')
+            -- Each nav button has one text label, with no narrow numeric field.
+            local labels=0
+            for _,frame in ipairs(frames) do
+                if frame.parent==page.nav and frame.kind=='FontString' then labels=labels+1 end
+            end
+            assert(labels==1)
+            local bar=page.scrollbar
+            assert(bar.ScrollUpButton==nil and bar.ScrollDownButton==nil)
+            local range=math.max(0,-page.cursor-418)
+            page.scroll.scripts.OnMouseWheel(page.scroll,-100)
+            assert(page.scroll.verticalScroll==range)
+            page.scroll.scripts.OnMouseWheel(page.scroll,100)
+            assert(page.scroll.verticalScroll==0)
+            if range>0 then
+                bar:SetValue(range/2)
+                assert(page.scroll.verticalScroll==range/2)
+            end
+            for otherIndex,other in ipairs(ui.pages) do
+                assert(other.scrollbar:IsShown()==(otherIndex==i and -other.cursor>418))
+            end
+        end
+    ''')
