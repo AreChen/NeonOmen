@@ -1,4 +1,4 @@
--- OmenReloadedForever - schlanker Threat-Meter fuer WoW Forever.
+-- NeonOmen - schlanker Threat-Meter fuer WoW Forever.
 -- Eigenstaendige Neuentwicklung (kein Fork), nutzt ausschliesslich die
 -- Unit-Threat-APIs (kein Combat-Log, der ist auf diesem Client gesperrt).
 
@@ -1238,7 +1238,7 @@ end
 local function CreateBar(index)
     local bar = CreateFrame("StatusBar", "OmenReloadedForeverBar" .. index, ORF.frame)
     bar:SetSize(db.width, db.height)
-    bar:SetStatusBarTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatGradient")
+    bar:SetStatusBarTexture("Interface\\AddOns\\NeonOmen\\Media\\ThreatGradient")
     bar:SetMinMaxValues(0, 100)
     bar:SetValue(0)
     bar:Hide()
@@ -1813,10 +1813,10 @@ ORF.frame:SetSize(db.width + FRAME_PADDING * 2, db.frameHeight)
 -- Nine-slice assets match NeonCast's rounded card without stretching corners.
 local neonBack = ORF.frame:CreateTexture(nil, "BACKGROUND", nil, -6)
 neonBack:SetAllPoints()
-neonBack:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonBack")
+neonBack:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonBack")
 local neonRing = ORF.frame:CreateTexture(nil, "BORDER")
 neonRing:SetAllPoints()
-neonRing:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonRing")
+neonRing:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonRing")
 for _, texture in ipairs({ neonBack, neonRing }) do
     if texture.SetTextureSliceMargins then
         texture:SetTextureSliceMargins(16, 16, 16, 16)
@@ -1826,7 +1826,7 @@ for _, texture in ipairs({ neonBack, neonRing }) do
     end
 end
 local neonGlow = ORF.frame:CreateTexture(nil, "BACKGROUND", nil, -7)
-neonGlow:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonGlow")
+neonGlow:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonGlow")
 neonGlow:SetPoint("TOPLEFT", -12, 12)
 neonGlow:SetPoint("BOTTOMRIGHT", 12, -12)
 neonGlow:SetBlendMode("ADD")
@@ -2037,7 +2037,7 @@ function OmenReloadedForever_ToggleTestMode() ToggleTestMode() end
 -- eigenes Panel + native Settings-Einbindung mit Fallback)
 -- ------------------------------------------------------------
 local optionsPanel = CreateFrame("Frame", "OmenReloadedForeverOptionsPanel", UIParent, "BackdropTemplate")
-optionsPanel.name = "OmenReloadedForever"
+optionsPanel.name = "NeonOmen"
 optionsPanel:SetSize(420, 560)
 optionsPanel:SetPoint("CENTER")
 optionsPanel:SetFrameStrata("DIALOG")
@@ -2677,6 +2677,7 @@ local function PrintDebugInfo()
 end
 
 SLASH_OMENRELOADEDFOREVER1 = "/orf"
+SLASH_OMENRELOADEDFOREVER2 = "/neonomen"
 SlashCmdList["OMENRELOADEDFOREVER"] = function(msg)
     msg = (msg or ""):lower()
     if msg == "lock" then

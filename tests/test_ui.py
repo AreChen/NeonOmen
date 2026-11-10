@@ -89,3 +89,18 @@ def test_options_requested_in_combat_open_after_combat():
         assert(OmenReloadedForeverOptionsPanel:IsShown())
         assert(OmenReloadedForeverFrame:GetFrameStrata()=='LOW')
     ''')
+
+
+def test_renamed_addon_loads_copied_legacy_settings_and_retains_bindings():
+    lua = addon(saved="{width=312,height=24,showGlow=false,themeColor={r=0.2,g=0.5,b=0.8}}")
+    g = lua.globals()
+    assert g.OmenReloadedForeverFrame.width == 332
+    assert g.OmenReloadedForeverDB.height == 24
+    assert g.OmenReloadedForeverDB.showGlow is False
+    assert g.OmenReloadedForeverDB.themeColor.b == 0.8
+    assert g.OmenReloadedForeverOptionsPanel.name == "NeonOmen"
+    assert g.SLASH_OMENRELOADEDFOREVER2 == "/neonomen"
+    preview(lua)
+    # Binding command IDs stay unchanged so existing key assignments still work.
+    g.OmenReloadedForever_ToggleTestMode()
+    g.flush()

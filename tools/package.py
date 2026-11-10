@@ -5,8 +5,8 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_FILES = (
-    "OmenReloadedForever.toc",
-    "OmenReloadedForever.lua",
+    "NeonOmen.toc",
+    "NeonOmen.lua",
     "Locale.lua",
     "UI/Theme.lua",
     "Bindings.xml",
@@ -20,13 +20,13 @@ RUNTIME_FILES = (
 
 
 def package(destination=None):
-    toc = (ROOT / "OmenReloadedForever.toc").read_text()
+    toc = (ROOT / "NeonOmen.toc").read_text()
     version = re.search(r"^## Version:\s*(\S+)", toc, re.MULTILINE).group(1)
     destination = Path(destination) if destination else ROOT / "dist" / f"NeonOmen-{version}.zip"
     destination.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(destination, "w", compression=ZIP_DEFLATED) as archive:
         for relative in RUNTIME_FILES:
-            archive.write(ROOT / relative, f"OmenReloadedForever/{relative}")
+            archive.write(ROOT / relative, f"NeonOmen/{relative}")
     return destination
 
 

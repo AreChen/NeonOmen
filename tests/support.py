@@ -149,12 +149,12 @@ def addon(locale="enUS", saved="{}", modern=True):
             methods.SetTextureSliceMargins=nil; methods.SetFixedFrameStrata=nil
         ''')
     lua.globals().GetLocale = lambda: locale
-    for entry in (ROOT / "OmenReloadedForever.toc").read_text().splitlines():
+    for entry in (ROOT / "NeonOmen.toc").read_text().splitlines():
         if entry.endswith(".lua"):
-            lua.execute((ROOT / entry).read_text(encoding="utf-8-sig"), "OmenReloadedForever", lua.globals().ns)
+            lua.execute((ROOT / entry).read_text(encoding="utf-8-sig"), "NeonOmen", lua.globals().ns)
     # Replacing the table matches the actual SavedVariables loading lifecycle.
     lua.execute("OmenReloadedForeverDB=" + saved)
-    lua.globals().dispatch("ADDON_LOADED", "OmenReloadedForever")
+    lua.globals().dispatch("ADDON_LOADED", "NeonOmen")
     lua.globals().flush()
     return lua
 

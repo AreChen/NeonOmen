@@ -10,7 +10,7 @@ Theme.colors = {
     muted = {0.46, 0.55, 0.68},
 }
 
-local MEDIA = "Interface\\AddOns\\OmenReloadedForever\\Media\\"
+local MEDIA = "Interface\\AddOns\\NeonOmen\\Media\\"
 
 function Theme.ApplyMeterLayer(frame)
     -- Settings, the game menu and dialogs must remain above the meter, even

@@ -12,19 +12,36 @@ A threat meter for World of Warcraft Forever, customized with a neon-style inter
 
 ## Installation
 
-The installation folder retains the original name for compatibility. Copy this repository's addon files into `Interface/AddOns/OmenReloadedForever`, then reload the game UI. The development repository and the installed addon are separate copies; changes need to be copied into the game directory.
+Extract the installation package and copy its `NeonOmen` directory into
+`Interface/AddOns/NeonOmen`. The TOC must be at `Interface/AddOns/NeonOmen/NeonOmen.toc`.
+The Actions artifact also extracts directly to this directory, without a nested ZIP.
 
-Use `/orf` to open settings and `/orf test` to toggle test mode.
+Use `/neonomen` (or `/orf`) to open settings and `/orf test` to toggle test mode.
 
-`1.0.4-alpha.1` is a development build awaiting verification in the Forever client.
-Existing saved settings and the `OmenReloadedForever` installation folder are retained.
+`1.0.4-alpha.2` is a development build awaiting verification in the Forever client.
+
+### Upgrading from the old folder name
+
+Exit the game before moving saved settings. Back up
+`WTF/Account/<account>/SavedVariables/OmenReloadedForever.lua`, then copy it to
+`WTF/Account/<account>/SavedVariables/NeonOmen.lua`. If a `NeonOmen.lua` settings file
+already exists, back it up before replacing it. The contents must retain the
+`OmenReloadedForeverDB` variable name; the new addon still uses that key.
+
+Install the new `NeonOmen` directory and remove the old
+`Interface/AddOns/OmenReloadedForever` addon directory. Then start the game.
+Without the settings-file copy, the renamed addon starts with defaults; the old
+settings file remains available for later migration. Existing keybinding command
+IDs and `/orf` are retained. See [Chinese upgrade steps](docs/UPGRADING.zh-CN.md).
 
 ## Development
 
 Install `requirements-dev.txt` in a virtual environment, then run
 `python -m pytest tests -q` and `python tools/package.py`.
 See [the verification checklist](docs/DEVELOPMENT.md) before releasing a stable build.
-Pull request checks also upload the installable ZIP as the `NeonOmen-test-build` artifact.
+Pull request checks upload the installable `NeonOmen/` directory as the
+`NeonOmen-test-build` artifact. The local packaging tool creates a versioned ZIP
+with the same top-level directory.
 
 ## Attribution and license
 

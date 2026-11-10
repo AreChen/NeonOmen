@@ -21,9 +21,12 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest tests -q
-      - run: python tools/package.py
+      - name: Build installable addon
+        run: |
+          package_archive="$(python tools/package.py)"
+          unzip -q "$package_archive" -d dist/install
       - uses: actions/upload-artifact@v4
         with:
           name: NeonOmen-test-build
-          path: dist/*.zip
+          path: dist/install/
           if-no-files-found: error
