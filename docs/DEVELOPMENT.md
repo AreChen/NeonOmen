@@ -56,3 +56,12 @@ They cannot establish actual client rendering, taint behavior or combat compatib
 - With custom client fonts, verify sidebar labels show without clipped numbering or ellipses. Scroll every page to both ends, drag each thumb, then switch pages and confirm positions persist. No native gold arrow buttons should appear.
 
 Keep the version prerelease until these checks pass. No release tag is created by the packaging tool.
+
+## GitHub releases
+
+The release workflow runs for a new `v<version>` tag or a manual dispatch of an
+existing tag. The tag must match the TOC, and version-specific notes must exist
+under `docs/publishing/`. It runs checks, packages runtime files, and publishes
+the ZIP plus `SHA256SUMS` using the job's repository token. The release remains a
+draft until the assets upload successfully. Existing releases are never replaced.
+Alpha/beta/rc versions are marked as GitHub prereleases.

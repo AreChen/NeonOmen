@@ -1,0 +1,89 @@
+name: Publish GitHub release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: release-${{ github.event.inputs.tag || github.ref_name }}
+      cancel-in-progress: false
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest tests -q
+      - name: Validate tag and build archive
+        id: build
+        run: |
+          python - <<'PY'
+          import hashlib
+          import os
+          from pathlib import Path
+          import re
+          import runpy
+
+          toc = Path('NeonOmen.toc').read_text()
+          version = re.search(r'^## Version:\s*(\S+)', toc, re.MULTILINE).group(1)
+          if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', version):
+              raise SystemExit('Invalid TOC version')
+          if os.environ['RELEASE_TAG'] != 'v' + version:
+              raise SystemExit('The version tag must match NeonOmen.toc')
+          notes = Path('docs/publishing') / f'release-notes-{version}.md'
+          if not notes.is_file():
+              raise SystemExit('Version-specific release notes are required')
+          package = runpy.run_path('tools/package.py')['package']()
+          checksum = package.parent / 'SHA256SUMS'
+          digest = hashlib.sha256(package.read_bytes()).hexdigest()
+          checksum.write_text(f'{digest}  {package.name}\n')
+          outputs = {
+              'version': version, 'package': str(package),
+              'checksum': str(checksum), 'notes': str(notes),
+              'prerelease': str('-' in version).lower(),
+          }
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key, value in outputs.items():
+                  output.write(f'{key}={value}\n')
+          PY
+      - name: Publish archive and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.build.outputs.version }}
+          PACKAGE_PATH: ${{ steps.build.outputs.package }}
+          CHECKSUM_PATH: ${{ steps.build.outputs.checksum }}
+          NOTES_PATH: ${{ steps.build.outputs.notes }}
+          PRERELEASE: ${{ steps.build.outputs.prerelease }}
+        run: |
+          if gh release view "$RELEASE_TAG" --json id >/dev/null 2>&1; then
+            echo '::error::A release already exists; refusing to replace its assets.'
+            exit 1
+          fi
+          release_args=(--draft --verify-tag --title "NeonOmen $VERSION" --notes-file "$NOTES_PATH")
+          if [ "$PRERELEASE" = 'true' ]; then
+            release_args+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" "$PACKAGE_PATH" "$CHECKSUM_PATH" "${release_args[@]}"
+          gh release edit "$RELEASE_TAG" --draft=false
