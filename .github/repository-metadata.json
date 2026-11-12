@@ -1,0 +1,7 @@
+{
+  "description": "NeonOmen: a neon-style threat meter for World of Warcraft Forever, with aggro alerts, TPS, class colors, and English / 简体中文 / 繁體中文 support.",
+  "topics": [
+    "world-of-warcraft", "wow-addon", "wow-forever", "threat-meter",
+    "aggro-meter", "aggro", "tps", "lua", "omen", "neon-ui", "localization"
+  ]
+}
