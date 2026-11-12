@@ -1,0 +1,19 @@
+{
+  "name": "NeonOmen",
+  "slug": "neonomen",
+  "summary": "Neon-style threat meter for WoW Forever with aggro alerts, TPS and English/Chinese support.",
+  "game": "World of Warcraft",
+  "targetClient": "World of Warcraft Forever",
+  "interface": 16001,
+  "suggestedPrimaryCategory": "Combat",
+  "sourceUrl": "https://github.com/AreChen/NeonOmen",
+  "issuesUrl": "https://github.com/AreChen/NeonOmen/issues",
+  "releaseVersion": "1.0.4-alpha.4",
+  "releaseType": "alpha",
+  "fileName": "NeonOmen-1.0.4-alpha.4.zip",
+  "descriptionFile": "docs/publishing/curseforge-description.md",
+  "changelogFile": "docs/publishing/release-notes-1.0.4-alpha.4.md",
+  "projectId": null,
+  "gameVersionIds": [],
+  "license": null
+}

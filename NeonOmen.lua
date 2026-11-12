@@ -1,8 +1,9 @@
--- OmenReloadedForever - schlanker Threat-Meter fuer WoW Forever.
+-- NeonOmen - schlanker Threat-Meter fuer WoW Forever.
 -- Eigenstaendige Neuentwicklung (kein Fork), nutzt ausschliesslich die
 -- Unit-Threat-APIs (kein Combat-Log, der ist auf diesem Client gesperrt).
 
 local addonName, ns = ...
+local Theme = ns.Theme
 
 -- WICHTIG: WoW laedt die SavedVariables erst NACH dem Ausfuehren dieser Datei
 -- (direkt vor ADDON_LOADED) und ersetzt dabei die globale Tabelle. Standardwerte,
@@ -1237,42 +1238,11 @@ end
 local function CreateBar(index)
     local bar = CreateFrame("StatusBar", "OmenReloadedForeverBar" .. index, ORF.frame)
     bar:SetSize(db.width, db.height)
-    bar:SetStatusBarTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatGradient")
     bar:SetMinMaxValues(0, 100)
     bar:SetValue(0)
     bar:Hide()
 
-    local bg = bar:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetTexture("Interface\\Buttons\\WHITE8x8")
-    bg:SetVertexColor(0.025, 0.03, 0.04, 0.96)
-
-    -- Draw above the fill: a background-layer glow was hidden behind the
-    -- opaque bar background. Anchoring to the fill also supports secret values.
-    local fill = bar:GetStatusBarTexture()
-    if bar.CreateMaskTexture and fill.AddMaskTexture then
-        local mask = bar:CreateMaskTexture()
-        mask:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-        mask:SetAllPoints(fill)
-        fill:AddMaskTexture(mask)
-        bar.roundMask = mask
-    end
-    bar.neonGlow = bar:CreateTexture(nil, "ARTWORK", nil, 2)
-    bar.neonGlow:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\ThreatGlow")
-    bar.neonGlow:SetPoint("TOPLEFT", fill, "TOPLEFT", -4, 4)
-    bar.neonGlow:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT", 4, -4)
-    bar.neonGlow:SetBlendMode("ADD")
-
-    bar.neonEdge = bar:CreateTexture(nil, "ARTWORK", nil, 3)
-    bar.neonEdge:SetPoint("TOPLEFT", fill, "TOPLEFT", 0, 0)
-    bar.neonEdge:SetPoint("TOPRIGHT", fill, "TOPRIGHT", 0, 0)
-    bar.neonEdge:SetHeight(1)
-
-    local topLine = bar:CreateTexture(nil, "OVERLAY")
-    topLine:SetPoint("TOPLEFT", 0, 0)
-    topLine:SetPoint("TOPRIGHT", 0, 0)
-    topLine:SetHeight(1)
-    topLine:SetColorTexture(1, 1, 1, 0.07)
+    Theme.SkinBar(bar)
 
     bar.nameText = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     bar.nameText:SetPoint("LEFT", bar, "LEFT", 4, 0)
@@ -1748,11 +1718,7 @@ local function RefreshBarsImpl()
         end
         bar.showedSecret = hidden
         local r, g, b = GetBarColor(entry)
-        bar:SetStatusBarColor(r, g, b)
-        bar.neonGlow:SetVertexColor(r, g, b, db.glowIntensity)
-        bar.neonGlow:SetShown(db.showGlow)
-        bar.neonEdge:SetColorTexture(r, g, b, 0.95)
-        bar.neonEdge:SetShown(db.showGlow)
+        Theme.PaintBar(bar, r, g, b, db.showGlow, db.glowIntensity)
         if entry.secretName then
             if not pcall(bar.nameText.SetText, bar.nameText, entry.secretName) then
                 bar.nameText:SetText(entry.unit)
@@ -1846,10 +1812,10 @@ ORF.frame:SetSize(db.width + FRAME_PADDING * 2, db.frameHeight)
 -- Nine-slice assets match NeonCast's rounded card without stretching corners.
 local neonBack = ORF.frame:CreateTexture(nil, "BACKGROUND", nil, -6)
 neonBack:SetAllPoints()
-neonBack:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonBack")
+neonBack:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonBack")
 local neonRing = ORF.frame:CreateTexture(nil, "BORDER")
 neonRing:SetAllPoints()
-neonRing:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonRing")
+neonRing:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonRing")
 for _, texture in ipairs({ neonBack, neonRing }) do
     if texture.SetTextureSliceMargins then
         texture:SetTextureSliceMargins(16, 16, 16, 16)
@@ -1859,7 +1825,7 @@ for _, texture in ipairs({ neonBack, neonRing }) do
     end
 end
 local neonGlow = ORF.frame:CreateTexture(nil, "BACKGROUND", nil, -7)
-neonGlow:SetTexture("Interface\\AddOns\\OmenReloadedForever\\Media\\NeonGlow")
+neonGlow:SetTexture("Interface\\AddOns\\NeonOmen\\Media\\NeonGlow")
 neonGlow:SetPoint("TOPLEFT", -12, 12)
 neonGlow:SetPoint("BOTTOMRIGHT", 12, -12)
 neonGlow:SetBlendMode("ADD")
@@ -1869,20 +1835,17 @@ if neonGlow.SetTextureSliceMargins then
         neonGlow:SetTextureSliceMode(Enum.UITextureSliceMode.Stretched)
     end
 end
-local neonStripe = ORF.frame:CreateTexture(nil, "ARTWORK")
-neonStripe:SetSize(3, 13)
-neonStripe:SetPoint("TOPLEFT", 6, -7)
 function ORF.ApplyTheme()
     local c = db.themeColor
-    neonBack:SetVertexColor(0.025, 0.03, 0.04, db.backgroundOpacity)
-    neonRing:SetVertexColor(c.r, c.g, c.b, 0.7)
-    neonGlow:SetVertexColor(c.r, c.g, c.b, db.glowIntensity)
+    local panel = Theme.colors.panel
+    neonBack:SetVertexColor(panel[1], panel[2], panel[3], db.backgroundOpacity)
+    neonRing:SetVertexColor(c.r, c.g, c.b, 0.24)
+    neonGlow:SetVertexColor(c.r, c.g, c.b, db.glowIntensity * 0.25)
     neonGlow:SetShown(db.showGlow)
-    neonStripe:SetColorTexture(c.r, c.g, c.b, 1)
 end
 ORF.ApplyTheme()
 ORF.frame:SetPoint(db.point, UIParent, db.relPoint, db.x, db.y)
-ORF.frame:SetFrameStrata("HIGH")
+Theme.ApplyMeterLayer(ORF.frame)
 ORF.frame:SetClampedToScreen(true)
 ORF.frame:SetMovable(true)
 ORF.frame:EnableMouse(true)
@@ -1900,6 +1863,7 @@ ORF.title:SetPoint("TOPRIGHT", ORF.frame, "TOPRIGHT", -FRAME_PADDING - 2, -8)
 ORF.title:SetJustifyH("CENTER")
 ORF.title:SetWordWrap(false)
 ORF.title:SetText(L.TITLE)
+ORF.title:SetTextColor(unpack(Theme.colors.text))
 
 ORF.headerName = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 ORF.headerName:SetJustifyH("LEFT")
@@ -1913,6 +1877,9 @@ ORF.headerTPS = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"
 ORF.headerTPS:SetJustifyH("RIGHT")
 ORF.headerTPS:SetText(L.HEADER_TPS)
 ORF.headerTPS:Hide()
+for _, header in ipairs({ORF.headerName, ORF.headerPct, ORF.headerTPS}) do
+    header:SetTextColor(unpack(Theme.colors.muted))
+end
 
 ORF.emptyText = ORF.frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 ORF.emptyText:SetJustifyH("CENTER")
@@ -2060,409 +2027,33 @@ function OmenReloadedForever_Toggle() ToggleWindow() end
 function OmenReloadedForever_ToggleFocus() ToggleFocus() end
 function OmenReloadedForever_ToggleTestMode() ToggleTestMode() end
 
--- ------------------------------------------------------------
--- Einstellungsfenster (gleiches Muster wie LevelProgress:
--- eigenes Panel + native Settings-Einbindung mit Fallback)
--- ------------------------------------------------------------
-local optionsPanel = CreateFrame("Frame", "OmenReloadedForeverOptionsPanel", UIParent, "BackdropTemplate")
-optionsPanel.name = "OmenReloadedForever"
-optionsPanel:SetSize(420, 560)
-optionsPanel:SetPoint("CENTER")
-optionsPanel:SetFrameStrata("DIALOG")
-optionsPanel:SetToplevel(true)
-optionsPanel:SetBackdrop({
-    bgFile = "Interface\\Buttons\\WHITE8x8",
-    edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1,
-})
-optionsPanel:SetBackdropColor(0.035, 0.04, 0.055, 0.98)
-optionsPanel:SetBackdropBorderColor(0.35, 0.44, 0.28, 0.9)
-local optionsAccent = optionsPanel:CreateTexture(nil, "ARTWORK")
-optionsAccent:SetPoint("TOPLEFT", 16, -15)
-optionsAccent:SetSize(3, 22)
-optionsAccent:SetColorTexture(0.67, 0.83, 0.45, 1)
-optionsPanel:SetMovable(true)
-optionsPanel:EnableMouse(true)
-optionsPanel:RegisterForDrag("LeftButton")
-optionsPanel:SetScript("OnDragStart", optionsPanel.StartMoving)
-optionsPanel:SetScript("OnDragStop", optionsPanel.StopMovingOrSizing)
-optionsPanel:Hide()
-
-local closeBtn = CreateFrame("Button", nil, optionsPanel, "UIPanelCloseButton")
-closeBtn:SetPoint("TOPRIGHT", -4, -4)
-
-local optTitle = optionsPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-optTitle:SetPoint("TOPLEFT", 28, -16)
-optTitle:SetText(L.TITLE)
-
--- Scrollbereich fuer alle Optionen: das native Einstellungsfenster hat eine
--- feste Hoehe und scrollt nicht von selbst.
-local optionsScroll = CreateFrame("ScrollFrame", "OmenReloadedForeverOptionsScroll", optionsPanel, "UIPanelScrollFrameTemplate")
-optionsScroll:SetPoint("TOPLEFT", optTitle, "BOTTOMLEFT", -4, -8)
-optionsScroll:SetPoint("BOTTOMRIGHT", optionsPanel, "BOTTOMRIGHT", -32, 14)
-
-local optionsContent = CreateFrame("Frame", nil, optionsScroll)
-optionsContent:SetSize(340, 600)
-optionsScroll:SetScrollChild(optionsContent)
-optionsScroll:SetScript("OnSizeChanged", function(self, width)
-    optionsContent:SetWidth(width)
-end)
-
--- Layout ueber einen laufenden y-Cursor statt Anker-Ketten: jedes Element
--- sitzt an optionsContent/TOPLEFT, die Gesamthoehe ergibt sich am Ende direkt.
--- Jedes Element meldet eine Sync-Funktion an, die beim Oeffnen den DB-Stand
--- uebernimmt.
-local optY = -4
-local syncFuncs = {}
-local function OnSync(fn) syncFuncs[#syncFuncs + 1] = fn end
-
-local function AddSpace(h)
-    optY = optY - h
-end
-
-local function AddHeader(text)
-    AddSpace(10)
-    local header = optionsContent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    header:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", 4, optY)
-    header:SetText(text)
-    local line = optionsContent:CreateTexture(nil, "ARTWORK")
-    line:SetColorTexture(0.67, 0.83, 0.45, 0.3)
-    line:SetHeight(1)
-    line:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -3)
-    line:SetPoint("RIGHT", optionsContent, "RIGHT", -8, 0)
-    AddSpace(26)
-end
-
--- Kompakte 24px-Checkboxen statt der 32px-Vorlage, damit mehr auf einen Blick passt.
-local function AddCheck(labelText, dbKey, onChanged, x, noAdvance)
-    local check = CreateFrame("CheckButton", nil, optionsContent, "UICheckButtonTemplate")
-    check:SetSize(24, 24)
-    check:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", x or 2, optY)
-    check.Text:SetText(labelText)
-    check:SetScript("OnClick", function(self)
-        db[dbKey] = self:GetChecked() and true or false
-        if onChanged then onChanged() end
-        RequestRefresh()
-    end)
-    OnSync(function() check:SetChecked(db[dbKey]) end)
-    if not noAdvance then AddSpace(26) end
-    return check
-end
-
-local function AddSlider(x, width, minValue, maxValue, step, lowText, highText, getValue, setValue, formatLabel)
-    local slider = CreateFrame("Slider", nil, optionsContent, "OptionsSliderTemplate")
-    slider:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", x, optY - 16)
-    slider:SetWidth(width)
-    slider:SetHeight(16)
-    slider:SetOrientation("HORIZONTAL")
-    slider:SetMinMaxValues(minValue, maxValue)
-    slider:SetValueStep(step)
-    slider:SetObeyStepOnDrag(true)
-    if slider.Low then slider.Low:SetText(lowText) end
-    if slider.High then slider.High:SetText(highText) end
-    slider:SetScript("OnValueChanged", function(self, value)
-        value = math.floor(value / step + 0.5) * step
-        setValue(value)
-        if self.Text then self.Text:SetText(formatLabel(value)) end
-    end)
-    OnSync(function()
-        slider:SetValue(getValue())
-        if slider.Text then slider.Text:SetText(formatLabel(getValue())) end
-    end)
-    return slider
-end
-
-local SLIDER_ROW_HEIGHT = 54
-local SLIDER_WIDTH = 160
-local SLIDER_X2 = 8 + SLIDER_WIDTH + 30
-
--- Farbauswahl ueber Blizzards ColorPickerFrame; neue API (SetupColorPickerAndShow)
--- und alte Feld-API werden beide unterstuetzt.
-local function OpenColorPicker(colorKey, onUpdate)
-    local c = db[colorKey]
-    local prev = { r = c.r, g = c.g, b = c.b }
-    local function Apply(r, g, b)
-        db[colorKey] = { r = r, g = g, b = b }
-        onUpdate()
-        RequestRefresh()
-    end
-    local function OnChanged()
-        local r, g, b = ColorPickerFrame:GetColorRGB()
-        Apply(r, g, b)
-    end
-    local function OnCancel()
-        Apply(prev.r, prev.g, prev.b)
-    end
-    if ColorPickerFrame.SetupColorPickerAndShow then
-        ColorPickerFrame:SetupColorPickerAndShow({
-            r = c.r, g = c.g, b = c.b,
-            hasOpacity = false,
-            swatchFunc = OnChanged,
-            cancelFunc = OnCancel,
-        })
-    else
-        ColorPickerFrame:Hide()
-        ColorPickerFrame.hasOpacity = false
-        ColorPickerFrame.opacityFunc = nil
-        ColorPickerFrame.previousValues = prev
-        ColorPickerFrame.func = OnChanged
-        ColorPickerFrame.cancelFunc = OnCancel
-        ColorPickerFrame:SetColorRGB(c.r, c.g, c.b)
-        ShowUIPanel(ColorPickerFrame)
-    end
-    ColorPickerFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-end
-
-local function AddColorSwatch(anchor, colorKey)
-    local swatch = CreateFrame("Button", nil, optionsContent)
-    swatch:SetSize(18, 18)
-    swatch:SetPoint("LEFT", anchor, "RIGHT", 8, 0)
-    local border = swatch:CreateTexture(nil, "BACKGROUND")
-    border:SetAllPoints()
-    border:SetColorTexture(0.85, 0.85, 0.85, 1)
-    local fill = swatch:CreateTexture(nil, "ARTWORK")
-    fill:SetPoint("TOPLEFT", 2, -2)
-    fill:SetPoint("BOTTOMRIGHT", -2, 2)
-    local function Update()
-        local c = db[colorKey]
-        fill:SetColorTexture(c.r, c.g, c.b, 1)
-    end
-    swatch:SetScript("OnClick", function() OpenColorPicker(colorKey, Update) end)
-    OnSync(Update)
-    return swatch
-end
-
--- === Sichtbarkeit ===
-AddHeader(L.SEC_VISIBILITY)
-AddCheck(L.OPT_COMBAT, "showInCombat")
-AddCheck(L.OPT_OUT_OF_COMBAT, "showOutOfCombat")
-AddCheck(L.OPT_SHOW_SOLO, "showSolo")
-AddCheck(L.OPT_SHOW_WITH_PET, "showWithPet")
-AddCheck(L.OPT_SHOW_PARTY, "showInParty")
-AddCheck(L.OPT_SHOW_RAID, "showInRaid")
-AddCheck(L.OPT_HIDE_RESTING, "hideWhileResting")
-AddCheck(L.OPT_HIDE_PVP, "hideInPVP")
-
--- === Anzeige ===
-AddHeader(L.SEC_DISPLAY)
-AddCheck(L.OPT_SHOW_PETS, "showPets")
-AddCheck(L.OPT_USE_FOCUS, "useFocus")
-AddCheck(L.OPT_ALWAYS_SHOW_SELF, "alwaysShowSelf")
-AddCheck(L.OPT_AGGRO_BAR, "showAggroBar")
-AddCheck(L.OPT_SHOW_VALUE, "showValue")
-AddCheck(L.OPT_SHOW_TPS, "showTPS")
-AddCheck(L.OPT_ANIMATE, "animateBars")
-AddCheck(L.OPT_GROW_UP, "growUp")
-AddCheck(L.OPT_SHOW_TITLE, "showTitleBar")
-AddCheck(L.OPT_SHOW_HEADER, "showHeader")
-AddCheck(L.OPT_TARGET_TITLE, "showTargetInTitle")
-AddCheck(L.OPT_SHOW_MARKERS, "showMarkers")
-
-AddSlider(8, SLIDER_WIDTH, 10, 32, 1, "10", "32",
-    function() return db.height end,
-    function(v) db.height = v; RequestRefresh() end,
-    function() return L.OPT_BAR_HEIGHT end)
--- Obergrenze fuer die Balkenzahl (Omens NumBars). Ohne Autocollapse werden
--- trotzdem nie mehr Balken gezeigt als in die Fensterflaeche passen.
-AddSlider(SLIDER_X2, SLIDER_WIDTH, 1, MAX_BARS, 1, "1", tostring(MAX_BARS),
-    function() return db.numBars end,
-    function(v) db.numBars = v; RequestRefresh() end,
-    function(v) return L.OPT_NUM_BARS .. ": " .. v end)
-AddSpace(SLIDER_ROW_HEIGHT)
-
--- === Farben ===
-AddHeader(L.SEC_COLORS)
-do
-    local label = optionsContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    label:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", 30, optY - 5)
-    label:SetText(L.OPT_THEME_COLOR)
-    AddColorSwatch(label, "themeColor")
-    AddSpace(26)
-end
-AddCheck(L.OPT_GLOW, "showGlow")
-AddSlider(8, SLIDER_WIDTH, 0, 1, 0.05, "0%", "100%",
-    function() return db.glowIntensity end,
-    function(v) db.glowIntensity = v; RequestRefresh() end,
-    function(v) return L.OPT_GLOW_INTENSITY .. ": " .. math.floor(v * 100 + 0.5) .. "%" end)
-AddSpace(SLIDER_ROW_HEIGHT)
-AddCheck(L.OPT_CLASS_COLORS, "useClassColors")
-local myColorCheck = AddCheck(L.OPT_MY_COLOR, "useMyBarColor")
-AddColorSwatch(myColorCheck.Text, "myBarColor")
-local tankColorCheck = AddCheck(L.OPT_TANK_COLOR, "useTankBarColor")
-AddColorSwatch(tankColorCheck.Text, "tankBarColor")
-local petColorCheck = AddCheck(L.OPT_PET_COLOR, "usePetBarColor")
-AddColorSwatch(petColorCheck.Text, "petBarColor")
-do
-    local label = optionsContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    label:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", 30, optY - 5)
-    label:SetText(L.OPT_AGGRO_COLOR)
-    AddColorSwatch(label, "aggroBarColor")
-    AddSpace(26)
-end
-
--- === Klassen-Filter (3 Spalten, Haken = Klasse wird angezeigt) ===
-AddHeader(L.SEC_CLASSES)
-do
-    local colWidth = 125
-    for i, token in ipairs(FILTER_CLASSES) do
-        local col = (i - 1) % 3
-        local check = CreateFrame("CheckButton", nil, optionsContent, "UICheckButtonTemplate")
-        check:SetSize(24, 24)
-        check:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", 2 + col * colWidth, optY)
-        local name = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[token]) or token
-        local color = RAID_CLASS_COLORS and RAID_CLASS_COLORS[token]
-        check.Text:SetText(name)
-        if color then check.Text:SetTextColor(color.r, color.g, color.b) end
-        check:SetScript("OnClick", function(self)
-            db.hiddenClasses[token] = not self:GetChecked() or nil
-            RequestRefresh()
-        end)
-        OnSync(function() check:SetChecked(not db.hiddenClasses[token]) end)
-        if col == 2 or i == #FILTER_CLASSES then AddSpace(26) end
-    end
-end
-
--- === Warnungen ===
-AddHeader(L.SEC_WARNINGS)
-local warnSoundCheck = AddCheck(L.OPT_WARN_SOUND, "warnSoundEnabled", nil, nil, true)
-
--- Echtes Dropdown-Menue (Blizzards Standard-UIDropDownMenu, wie bei den
--- meisten anderen Addons) statt Durchklick-Button.
-local soundDropdown = CreateFrame("Frame", "OmenReloadedForeverSoundDropdown", optionsContent, "UIDropDownMenuTemplate")
-soundDropdown:SetPoint("LEFT", warnSoundCheck.Text, "RIGHT", -6, -2)
-UIDropDownMenu_SetWidth(soundDropdown, 170)
-
-local function SoundDropdown_OnClick(self)
-    db.warnSound = self.value
-    UIDropDownMenu_SetText(soundDropdown, GetSoundLabel(self.value))
-    PlaySoundChoice(GetSoundChoice(self.value))
-end
-
-UIDropDownMenu_Initialize(soundDropdown, function(self, level)
-    for _, choice in ipairs(SOUND_CHOICES) do
-        local info = UIDropDownMenu_CreateInfo()
-        info.text = choice.label
-        info.value = choice.id
-        info.func = SoundDropdown_OnClick
-        info.checked = (db.warnSound == choice.id)
-        UIDropDownMenu_AddButton(info, level)
-    end
-end)
-OnSync(function() UIDropDownMenu_SetText(soundDropdown, GetSoundLabel(db.warnSound)) end)
-AddSpace(34)
-
-AddCheck(L.OPT_WARN_FLASH, "warnFlash")
-AddCheck(L.OPT_WARN_SHAKE, "warnShake")
-AddCheck(L.OPT_WARN_MESSAGE, "warnMessage")
-AddCheck(L.OPT_WARN_AGGRO_TAKEN, "warnAggroTaken")
-AddCheck(L.OPT_WARN_TANK, "disableWarnAsTank")
-
--- Warnschwelle = zugleich Beginn der Gelbfaerbung (wie bisher die feste 80).
-AddSlider(8, SLIDER_WIDTH, 50, 100, 1, "50%", "100%",
-    function() return db.yellowThreshold end,
-    function(v) db.yellowThreshold = v; RequestRefresh() end,
-    function(v) return L.OPT_WARN_THRESHOLD .. ": " .. v .. " %" end)
-
-local testWarnBtn = CreateFrame("Button", nil, optionsContent, "UIPanelButtonTemplate")
-testWarnBtn:SetSize(150, 22)
-testWarnBtn:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", SLIDER_X2, optY - 12)
-testWarnBtn:SetText(L.BTN_TEST_WARN)
-testWarnBtn:SetScript("OnClick", function()
-    FireWarning(L.TESTDATA_TANK)
-end)
-AddSpace(SLIDER_ROW_HEIGHT)
-
--- === Fenster ===
-AddHeader(L.SEC_WINDOW)
-AddCheck(L.OPT_LOCKED, "locked", ApplyFrameSettings)
-AddCheck(L.OPT_CLICK_THROUGH, "clickThrough", ApplyFrameSettings)
--- Beim Abschalten die gespeicherte Hoehe zurueckholen -- nur hier, nicht im
--- Refresh, sonst kaeme der alte Resize-Kampf zurueck.
-AddCheck(L.OPT_AUTO_COLLAPSE, "autoCollapse", function()
-    if not db.autoCollapse then
-        ORF.frame:SetHeight(db.frameHeight)
-    end
-end)
-
-AddSlider(8, SLIDER_WIDTH, 0.2, 1, 0.05, "20%", "100%",
-    function() return db.alpha end,
-    function(v) db.alpha = v; ApplyFrameSettings() end,
-    function(v) return L.OPT_ALPHA .. ": " .. math.floor(v * 100 + 0.5) .. " %" end)
-AddSlider(SLIDER_X2, SLIDER_WIDTH, 0.5, 2, 0.05, "50%", "200%",
-    function() return db.scale end,
-    function(v) db.scale = v; ApplyFrameSettings() end,
-    function(v) return L.OPT_SCALE .. ": " .. math.floor(v * 100 + 0.5) .. " %" end)
-AddSpace(SLIDER_ROW_HEIGHT)
-AddSlider(8, SLIDER_WIDTH, 0, 1, 0.05, "0%", "100%",
-    function() return db.backgroundOpacity end,
-    function(v) db.backgroundOpacity = v; ORF.ApplyTheme() end,
-    function(v) return L.OPT_BACKGROUND_OPACITY .. ": " .. math.floor(v * 100 + 0.5) .. "%" end)
-AddSpace(SLIDER_ROW_HEIGHT)
-
-local resetBtn = CreateFrame("Button", nil, optionsContent, "UIPanelButtonTemplate")
-resetBtn:SetSize(160, 22)
-resetBtn:SetPoint("TOPLEFT", optionsContent, "TOPLEFT", 6, optY)
-resetBtn:SetText(L.BTN_RESET_POSITION)
-resetBtn:SetScript("OnClick", ResetPosition)
-
--- Zeigt Fake-Balken an, unabhaengig von Kampf/Gruppe/echten Threat-Daten --
--- fuers Positionieren und Durchprobieren der Farben ohne echten Kampf.
-local testModeBtn = CreateFrame("Button", nil, optionsContent, "UIPanelButtonTemplate")
-testModeBtn:SetSize(190, 22)
-testModeBtn:SetPoint("LEFT", resetBtn, "RIGHT", 8, 0)
-testModeBtn:SetScript("OnClick", ToggleTestMode)
-function ORF.UpdateTestModeButton()
-    testModeBtn:SetText(testMode and L.BTN_TESTMODE_ON or L.BTN_TESTMODE_OFF)
-end
-OnSync(ORF.UpdateTestModeButton)
-AddSpace(30)
-
--- === Minimap ===
-AddHeader(L.SEC_MINIMAP)
--- Der Button existiert hier noch nicht, darum ueber ORF.UpdateMinimapButton.
-AddCheck(L.OPT_SHOW_MINIMAP, "showMinimapButton",
-    function() if ORF.UpdateMinimapButton then ORF.UpdateMinimapButton() end end)
--- Abstand des Minimap-Buttons zum Kartenrand (wird zum halben
--- Minimap-Durchmesser addiert).
-AddSlider(8, SLIDER_WIDTH, -20, 40, 1, "-20", "+40",
-    function() return db.minimapOffset end,
-    function(v)
-        db.minimapOffset = v
-        if ORF.UpdateMinimapButton then ORF.UpdateMinimapButton() end
-    end,
-    function() return L.OPT_MINIMAP_OFFSET end)
-AddSpace(SLIDER_ROW_HEIGHT)
-
-optionsContent:SetHeight(-optY + 10)
-
-local function UpdateOptionsWidgets()
-    for _, fn in ipairs(syncFuncs) do fn() end
-end
-
-optionsPanel:SetScript("OnShow", function()
-    optionsContent:SetWidth(optionsScroll:GetWidth())
-    UpdateOptionsWidgets()
-end)
-
-local optionsCategoryID = nil
-if Settings and Settings.RegisterCanvasLayoutCategory then
-    local ok, category = pcall(Settings.RegisterCanvasLayoutCategory, optionsPanel, optionsPanel.name)
-    if ok and category then
-        Settings.RegisterAddOnCategory(category)
-        optionsCategoryID = category:GetID()
-        -- Eingebettet ins native Blizzard-Fenster braucht es keinen eigenen
-        -- Schließen-Button und keine Verschiebbarkeit (siehe LevelProgress).
-        closeBtn:Hide()
-        optionsPanel:SetMovable(false)
-        optionsPanel:EnableMouse(false)
-        optionsPanel:RegisterForDrag()
-    end
-end
-
--- Blizzards Einstellungsfenster ist im Kampf geschuetzt (OpenSettingsPanel ->
--- ADDON_ACTION_BLOCKED). Darum im Kampf nur vormerken und nach dem Kampf
--- (PLAYER_REGEN_ENABLED) oeffnen.
+-- The settings window reads the current DB through this adapter, so replacing
+-- SavedVariables in ADDON_LOADED never leaves controls pointing at old defaults.
 local openOptionsAfterCombat = false
-local function OpenOptions()
+local OpenOptions
+local optionsUI = ns.Options.Create({
+    L=L, DB=function() return db end, Frame=ORF.frame,
+    ApplyFrameSettings=ApplyFrameSettings, ApplyTheme=ORF.ApplyTheme,
+    ApplyWidth=function() ORF.frame:SetWidth(db.width+FRAME_PADDING*2) end,
+    RequestRefresh=RequestRefresh, BarColor=GetBarColor,
+    Classes=FILTER_CLASSES, Sounds=SOUND_CHOICES,
+    SoundLabel=GetSoundLabel, PlaySound=PlaySoundChoice,
+    ToggleTestMode=ToggleTestMode, IsTestMode=function() return testMode end,
+    ResetPosition=ResetPosition, TestWarning=function() FireWarning(L.TESTDATA_TANK) end,
+    UpdateMinimap=function() if ORF.UpdateMinimapButton then ORF.UpdateMinimapButton() end end,
+    Open=function() OpenOptions() end,
+    Version=function()
+        local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+        if getMeta then
+            local ok,value=pcall(getMeta,addonName,"Version")
+            if ok then return value or "NeonOmen" end
+        end
+        return "NeonOmen"
+    end,
+})
+ns.Options.current = optionsUI
+ORF.UpdateTestModeButton = optionsUI.Refresh
+OpenOptions = function()
     if InCombatLockdown() then
         if not openOptionsAfterCombat then
             openOptionsAfterCombat = true
@@ -2471,12 +2062,7 @@ local function OpenOptions()
         return
     end
     openOptionsAfterCombat = false
-    if optionsCategoryID and Settings.OpenToCategory then
-        Settings.OpenToCategory(optionsCategoryID)
-    else
-        UpdateOptionsWidgets()
-        optionsPanel:Show()
-    end
+    optionsUI.Show()
 end
 
 -- ------------------------------------------------------------
@@ -2705,6 +2291,7 @@ local function PrintDebugInfo()
 end
 
 SLASH_OMENRELOADEDFOREVER1 = "/orf"
+SLASH_OMENRELOADEDFOREVER2 = "/neonomen"
 SlashCmdList["OMENRELOADEDFOREVER"] = function(msg)
     msg = (msg or ""):lower()
     if msg == "lock" then
