@@ -25,9 +25,9 @@ through a customizable neon interface with English, 简体中文 and 繁體中�
 - Width, height, bar spacing, scale, upward growth, auto-collapse, locking and click-through controls.
 - A LOW-layer meter that stays below normal system windows; a separate DIALOG-layer settings console.
 
-![NeonOmen settings and threat-bar simulation; not an in-game screenshot](docs/settings-preview.zh-CN.png)
+![NeonOmen settings shown in World of Warcraft Forever](docs/settings-in-game.jpg)
 
-The preview above is a simulated layout. The current build is **1.0.4-alpha.4**;
+In-game screenshot of version **1.0.4-alpha.3**; the settings panel shows sample threat bars. The current build is **1.0.4-alpha.4**;
 client rendering and combat behavior still require in-game verification.
 NeonOmen targets the **World of Warcraft Forever client**. Other WoW client
 variants have not been verified.
