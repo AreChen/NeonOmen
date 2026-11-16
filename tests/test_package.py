@@ -23,6 +23,7 @@ def test_release_archive_contains_only_addon_files(tmp_path):
         }
         assert "NeonOmenReborn/Media/Glow.tga" in names
         assert "NeonOmenReborn/Media/NeonBar.tga" in names
+        assert "NeonOmenReborn/Media/BarGlow.tga" in names
         assert all(name.startswith("NeonOmenReborn/") for name in names)
         assert not any("backups/" in name or "tests/" in name or ".git/" in name for name in names)
         toc = archive.read("NeonOmenReborn/NeonOmenReborn.toc").decode("utf-8")

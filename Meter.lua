@@ -184,10 +184,10 @@ local function newRow(index)
     row:SetMinMaxValues(0,100)
     row.glow = texture(row, "OVERLAY", {1,1,1,0})
     row.glow:SetDrawLayer("OVERLAY",-1)
-    row.glow:SetTexture("Interface\\AddOns\\NeonOmenReborn\\Media\\Glow")
+    row.glow:SetTexture("Interface\\AddOns\\NeonOmenReborn\\Media\\BarGlow")
     row.glow:SetBlendMode("ADD")
-    row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-8,7)
-    row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",8,-7)
+    row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-18,13)
+    row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",18,-13)
     row.background = texture(row, "BACKGROUND", {0.12,0.15,0.20,0.75})
     row.background:SetAllPoints()
     row.threshold = texture(row,"OVERLAY",{1,0.85,0.4,0.95})
@@ -314,14 +314,15 @@ function ns.RefreshMeter()
             if entry.reference or (not entry.tank and (entry.pct and entry.pct >= db.warningThreshold or entry.secretPct and entry.status and entry.status >= 1)) then r,g,b=db.aggroRed,db.aggroGreen,db.aggroBlue
             elseif entry.tank and db.useTankColor then r,g,b=db.tankRed,db.tankGreen,db.tankBlue end
             row:SetStatusBarColor(r,g,b,db.barAlpha)
-            row.glow:SetVertexColor(r,g,b,db.glow and min(1,db.glowIntensity*1.35) or 0)
+            row.glow:SetVertexColor(r,g,b,db.glow and min(1,db.glowIntensity*0.38) or 0)
             local fill = barTexture
             if row.currentTexture ~= fill then
                 row:SetStatusBarTexture(fill)
+                row.shade:SetTexture(fill)
                 row.shade:SetAllPoints(row:GetStatusBarTexture())
                 row.glow:ClearAllPoints()
-                row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-8,7)
-                row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",8,-7)
+                row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-18,13)
+                row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",18,-13)
                 row.currentTexture=fill
             end
             if fontPath and (row.fontPath~=fontPath or row.fontSize~=db.fontSize or row.fontFlags~=fontFlags) then

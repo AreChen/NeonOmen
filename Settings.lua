@@ -250,6 +250,7 @@ local function paint()
     local previewTexture=ns.MediaPath("statusbar",ns.db.textureName) or ns.barTextures[ns.db.barTexture] or ns.barTextures[1]
     if frame.preview.currentTexture~=previewTexture then
         frame.preview:SetStatusBarTexture(previewTexture)
+        frame.preview.shade:SetTexture(previewTexture)
         frame.preview.shade:SetAllPoints(frame.preview:GetStatusBarTexture())
         frame.preview.currentTexture=previewTexture
     end

@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ADDON = "NeonOmenReborn"
 FILES = (
     "NeonOmenReborn.toc", "Bindings.xml", "Core.lua", "Meter.lua", "Settings.lua", "Minimap.lua",
-    "LICENSE", "README.md", "README.zh-CN.md", "Media/Panel.tga", "Media/Glow.tga", "Media/NeonBar.tga",
+    "LICENSE", "README.md", "README.zh-CN.md", "Media/Panel.tga", "Media/Glow.tga", "Media/NeonBar.tga", "Media/BarGlow.tga",
 )
 
 

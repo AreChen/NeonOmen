@@ -53,6 +53,7 @@ def runtime(locale="enUS"):
         function M:SetValue(v) if rejectSecretValue and type(v)=='table' and v.secret then error('restricted') end;self.statusValue=v end
         function M:SetStatusBarColor(...) self.barColor={...} end
         function M:SetStatusBarTexture(path) self.barTexture=path end
+        function M:SetTexture(path) self.texturePath=path end
         function M:GetStatusBarTexture() self.status=self.status or CreateFrame('Texture');return self.status end
         function M:Show() self.shown=true;if self.scripts.OnShow then self.scripts.OnShow(self) end end
         function M:Hide() self.shown=false;if self.scripts.OnHide then self.scripts.OnHide(self) end end
@@ -579,6 +580,34 @@ def test_shared_media_texture_is_used_when_available():
             if f.kind=='StatusBar' and rawget(f,'barTexture')=='Textures/Custom.tga' then found=true end
         end
         assert(found, 'registered shared-media bar texture should be applied')
+    """)
+
+
+def test_bar_highlight_preserves_the_selected_texture_mask():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('barTexture',4);ns.Set('style',2);ns.Set('test',true)
+        local found=false
+        for _,f in ipairs(frames) do
+            if f.kind=='Texture' and rawget(f,'texturePath')==ns.barTextures[4]
+                and f.parent and f.parent.kind=='StatusBar' then found=true end
+        end
+        assert(found, 'the highlight must use the bar mask to keep rounded corners')
+    """)
+
+
+def test_bar_halo_uses_soft_texture_and_respects_glow_setting():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('test',true);ns.Set('glow',true);ns.Set('glowIntensity',1)
+        local halo
+        for _,f in ipairs(frames) do
+            if f.kind=='Texture' and type(rawget(f,'texturePath'))=='string'
+                and f.texturePath:find('BarGlow',1,true) then halo=f;break end
+        end
+        assert(halo and halo.color[4] > 0 and halo.color[4] < 0.5)
+        ns.Set('glow',false)
+        assert(halo.color[4]==0)
     """)
 
 

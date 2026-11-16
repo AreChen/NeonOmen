@@ -21,6 +21,14 @@ glow = Image.new("RGBA", (256, 256), (255, 255, 255, 0))
 glow.putalpha(mask)
 glow.save(media / "Glow.tga")
 
+# A wide, soft halo for individual bars, without the hard rectangular ring.
+bar_glow_mask = Image.new("L", (128, 64))
+ImageDraw.Draw(bar_glow_mask).rounded_rectangle((10, 22, 117, 41), radius=10, fill=220)
+bar_glow_mask = bar_glow_mask.filter(ImageFilter.GaussianBlur(10))
+bar_glow = Image.new("RGBA", (128, 64), (255, 255, 255, 0))
+bar_glow.putalpha(bar_glow_mask)
+bar_glow.save(media / "BarGlow.tga")
+
 # A neutral, tintable pill with a subtle highlight and transparent corners.
 bar_mask = Image.new("L", (128, 32))
 ImageDraw.Draw(bar_mask).rounded_rectangle((0, 0, 127, 31), radius=10, fill=255)
