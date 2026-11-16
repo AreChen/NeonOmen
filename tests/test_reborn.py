@@ -60,6 +60,7 @@ def runtime(locale="enUS"):
         function M:SetShown(v) if v then self:Show() else self:Hide() end end
         function M:IsShown() return self.shown end
         function M:EnableGamePadButton(v) self.padEnabled=v end
+        function M:SetPropagateKeyboardInput(v) self.propagateInput=v end
         function M:GetPoint() return 'CENTER',UIParent,'CENTER',180,0 end
         ns = {}
     """)
@@ -174,6 +175,39 @@ def test_opt_in_gamepad_navigation_and_combat_release():
         assert(settings.padEnabled)
         settings.scripts.OnGamePadButtonDown(settings, 'PAD2')
         assert(not settings.shown and not settings.padEnabled)
+    """)
+
+
+def test_gamepad_is_released_immediately_when_combat_event_arrives():
+    lua=runtime()
+    lua.execute("""
+        SlashCmdList.NEONOMENREBORN()
+        local settings=NeonOmenRebornSettings
+        assert(settings.padEnabled)
+        -- The event can precede the lockdown flag changing.
+        combat=false;settings.scripts.OnEvent(settings,'PLAYER_REGEN_DISABLED')
+        assert(not settings.padEnabled)
+        local style=ns.db.style
+        settings.scripts.OnGamePadButtonDown(settings,'PADDRIGHT')
+        assert(ns.db.style==style)
+        settings.scripts.OnEvent(settings,'PLAYER_REGEN_ENABLED')
+        assert(settings.padEnabled)
+    """)
+
+
+def test_gamepad_only_consumes_navigation_buttons():
+    lua=runtime()
+    lua.execute("""
+        SlashCmdList.NEONOMENREBORN()
+        local settings=NeonOmenRebornSettings
+        settings.scripts.OnGamePadButtonDown(settings,'PAD3')
+        assert(settings.propagateInput, 'unrelated actions should pass through')
+        settings.scripts.OnGamePadButtonDown(settings,'PADDRIGHT')
+        assert(not settings.propagateInput, 'navigation should stay in the settings panel')
+        settings.scripts.OnGamePadButtonUp(settings,'PADDRIGHT')
+        assert(not settings.propagateInput, 'a consumed press must consume its release')
+        settings:Hide()
+        assert(settings.propagateInput, 'closing the panel must release input')
     """)
 
 

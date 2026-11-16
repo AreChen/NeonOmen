@@ -1,6 +1,13 @@
 local _, ns = ...
 local frame, nav, controls, page = nil, {}, {}, 1
 local selected = 1
+local fighting = false
+local padKeys={PADDUP=true,PADDDOWN=true,PADDLEFT=true,PADDRIGHT=true,
+    PAD1=true,PAD2=true,PADLSHOULDER=true,PADRSHOULDER=true}
+local consumed={}
+local function propagate(self,enabled)
+    if self.SetPropagateKeyboardInput then pcall(self.SetPropagateKeyboardInput,self,enabled) end
+end
 local tabs = {}
 local active = {}
 local white = "Interface\\Buttons\\WHITE8X8"
@@ -267,7 +274,9 @@ local function paint()
         frame.preview.shade:SetVertexColor(1,1,1,ns.db.style==3 and 0.16 or 0)
     end
     if frame.EnableGamePadButton then
-        frame:EnableGamePadButton(ns.db.padNavigation and frame:IsShown() and not InCombatLockdown())
+        local enabled=ns.db.padNavigation and frame:IsShown() and not fighting and not InCombatLockdown()
+        frame:EnableGamePadButton(enabled)
+        if not enabled then consumed={};propagate(frame,true) end
     end
 end
 function ns.RefreshSettings() if frame then paint() end end
@@ -352,8 +361,11 @@ function ns.CreateSettings()
     reset:SetScript("OnClick",function() ns.ResetMeter() end)
     local hint=label(frame,ns.L.padHint,"GameFontDisableSmall")
     hint:SetPoint("BOTTOMLEFT",242,12);hint:SetWidth(556)
-    frame:SetScript("OnGamePadButtonDown",function(_,button)
-        if not ns.db.padNavigation or InCombatLockdown() then return end
+    frame:SetScript("OnGamePadButtonDown",function(self,button)
+        if not ns.db.padNavigation or fighting or InCombatLockdown() or not padKeys[button] then
+            propagate(self,true);return
+        end
+        consumed[button]=true
         if button=="PADDUP" then selected=((selected-2)%#active)+1;paint()
         elseif button=="PADDDOWN" then selected=(selected%#active)+1;paint()
         elseif button=="PADDLEFT" then adjust(active[selected],-1)
@@ -361,11 +373,24 @@ function ns.CreateSettings()
         elseif button=="PADLSHOULDER" then choosePage(page-1)
         elseif button=="PADRSHOULDER" then choosePage(page+1)
         elseif button=="PAD2" then frame:Hide() end
+        propagate(self,false)
+    end)
+    frame:SetScript("OnGamePadButtonUp",function(self,button)
+        local handled=consumed[button]
+        consumed[button]=nil
+        propagate(self,not handled)
     end)
     frame:RegisterEvent("PLAYER_REGEN_DISABLED");frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-    frame:SetScript("OnEvent",function() paint() end)
-    frame:SetScript("OnShow",function() paint() end)
-    frame:SetScript("OnHide",function(self) if self.EnableGamePadButton then self:EnableGamePadButton(false) end end)
+    frame:SetScript("OnEvent",function(_,event)
+        if event=="PLAYER_REGEN_DISABLED" then fighting=true;consumed={};propagate(frame,true)
+        elseif event=="PLAYER_REGEN_ENABLED" then fighting=false end
+        paint()
+    end)
+    frame:SetScript("OnShow",function(self) propagate(self,true);paint() end)
+    frame:SetScript("OnHide",function(self)
+        consumed={};propagate(self,true)
+        if self.EnableGamePadButton then self:EnableGamePadButton(false) end
+    end)
     frame:Hide()
     table.insert(UISpecialFrames,"NeonOmenRebornSettings")
     ns.RegisterSettingsCategory()
