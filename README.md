@@ -23,6 +23,9 @@ font and layout, automatic height, class and pet filters, visibility rules,
 focus targets, TPS, a pull boundary when it can be calculated reliably, and
 configurable warning sound, text, flash and meter shake. The boundary is only
 displayed when readable client data distinguishes 110% from 130%.
+Names can show a tank marker, a short-lived threat-transfer marker, and
+dead/offline status; pet names have a localized suffix. Restricted names are
+passed directly to the client and cannot be decorated.
 Built-in materials include rounded neon; fonts and bar textures registered
 with LibSharedMedia are also available when another addon provides the library.
 The controls page offers three independent profile slots that remember changes

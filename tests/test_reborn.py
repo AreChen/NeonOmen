@@ -414,6 +414,41 @@ def test_warning_flash_uses_four_screen_edges():
     """)
 
 
+def test_threat_names_show_tank_pet_and_status_markers():
+    lua=runtime()
+    lua.execute("""
+        UnitExists=function(unit) return unit=='target' or unit=='player' or unit=='pet' end
+        UnitName=function(unit) return unit=='pet' and 'Wolf' or 'Tester' end
+        UnitDetailedThreatSituation=function(unit) return unit=='pet',2,80,80,1200 end
+        UnitIsDeadOrGhost=function(unit) return unit=='pet' end
+        ns.Set('showMarker',true);ns.RefreshMeter()
+        local found=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and type(rawget(f,'text'))=='string'
+                and f.text:find('Wolf',1,true) and f.text:find('[T]',1,true)
+                and f.text:find(ns.L.petSuffix,1,true) and f.text:find(ns.L.dead,1,true) then found=true end
+        end
+        assert(found,'pet tank and dead state should be visible')
+    """)
+
+
+def test_threat_transfer_marker_tracks_new_holder():
+    lua=runtime()
+    lua.execute("""
+        local holder='player'
+        UnitExists=function(unit) return unit=='target' or unit=='player' or unit=='pet' end
+        UnitName=function(unit) return unit=='pet' and 'Wolf' or 'Tester' end
+        UnitDetailedThreatSituation=function(unit) return unit==holder,2,80,80,1200 end
+        ns.RefreshMeter();holder='pet';now=now+1;ns.RefreshMeter()
+        local found=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and type(rawget(f,'text'))=='string'
+                and f.text:find('Wolf',1,true) and f.text:find('[!]',1,true) then found=true end
+        end
+        assert(found, 'new threat holder should be flagged')
+    """)
+
+
 def test_restricted_widget_rejection_degrades_without_crashing():
     lua=runtime()
     lua.execute("""
@@ -467,7 +502,7 @@ def test_chinese_locales_translate_choices_and_preview():
             ns.Set('test',true)
             local found=false
             for _,f in ipairs(frames) do
-                if f.kind=='FontString' and f.text==ns.L.sampleTank then found=true end
+                if f.kind=='FontString' and type(rawget(f,'text'))=='string' and f.text:find(ns.L.sampleTank,1,true) then found=true end
             end
             assert(found, 'preview labels should be localized')
         """)

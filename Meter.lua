@@ -3,6 +3,7 @@ local floor, max, min = math.floor, math.max, math.min
 local meter, rows, elapsed = nil, {}, 0
 local history, targetKey, lastWarning, manualHidden = {}, nil, -1000, false
 local aggroTarget, hadAggro, warningTarget, wasNear = nil, nil, nil, false
+local markerTarget, markerHolder, markerUntil = nil, nil, 0
 local white = "Interface\\Buttons\\WHITE8X8"
 local samples = {
     {name=ns.L.sampleTank, pct=100, value=10000, tps=320, class="WARRIOR", tank=true},
@@ -19,6 +20,11 @@ local function readable(v)
     v = ns.Safe(v)
     if type(v) ~= "number" then return nil end
     return v
+end
+local function safeCall(fn, ...)
+    if not fn then return nil end
+    local ok,value=pcall(fn,...)
+    if ok then return ns.Safe(value) end
 end
 local function shortNumber(value)
     if value >= 1000000000 then return string.format("%.1fB",value/1000000000) end
@@ -92,9 +98,12 @@ local function gather()
             local hidden = class and ns.db["hide_"..class]
             if (pct or isSecretPct) and (type(name) == "string" or isSecretName) and (not hidden or isPlayer and ns.db.showSelf) then
                 local id = UnitGUID and ns.Safe(UnitGUID(unit)) or unit
+                local isPet=unit:lower():find("pet",1,true) ~= nil
                 found[#found+1] = {name=name, secretName=isSecretName, rawName=rawName, pct=pct, secretPct=isSecretPct,
                     rawPct=scaled, rawThreatPct=readable(raw), value=value, class=class, status=readable(status), tank=ns.Safe(tank), pet=unit:lower():find("pet",1,true) ~= nil,
-                    unit=unit, player=isPlayer, tps=value and sampleRate(id,value,now), order=#found+1}
+                    unit=unit, player=isPlayer, tps=value and sampleRate(id,value,now), order=#found+1,
+                    dead=safeCall(UnitIsDeadOrGhost,unit)==true,
+                    offline=not isPet and safeCall(UnitIsConnected,unit)==false}
             end
         end
     end
@@ -103,6 +112,16 @@ local function gather()
         if (a.pct ~= nil) ~= (b.pct ~= nil) then return a.pct ~= nil end
         return a.order < b.order
     end)
+    if guid~=markerTarget then markerTarget,markerHolder,markerUntil=guid,nil,0 end
+    for _,entry in ipairs(found) do
+        if entry.tank then
+            local holder=UnitGUID and ns.Safe(UnitGUID(entry.unit)) or entry.unit
+            if markerHolder and holder~=markerHolder then markerUntil=now+3 end
+            markerHolder=holder
+            entry.aggroChanged=now<markerUntil
+            break
+        end
+    end
     return found, target
 end
 local function showForContext()
@@ -263,7 +282,16 @@ function ns.RefreshMeter()
             local marker = db.showMarker and entry.unit and GetRaidTargetIndex and ns.Safe(GetRaidTargetIndex(entry.unit))
             if entry.secretName then
                 if not pcall(row.name.SetText,row.name,entry.rawName) then row.name:SetText(entry.unit or "?") end
-            else row.name:SetText((type(marker)=="number" and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..marker..":14|t ") or "")..entry.name) end
+            else
+                local name=entry.name..(entry.pet and ns.L.petSuffix or "")
+                if db.showMarker then
+                    if entry.dead then name=name.." ("..ns.L.dead..")"
+                    elseif entry.offline then name=name.." ("..ns.L.offline..")" end
+                    if entry.tank then name="[T] "..name end
+                    if entry.aggroChanged then name="[!] "..name end
+                end
+                row.name:SetText((type(marker)=="number" and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..marker..":14|t ") or "")..name)
+            end
             local parts = {}
             if db.showValue then parts[#parts+1]=entry.value and shortNumber(entry.value) or "--" end
             if db.showTPS then parts[#parts+1]=entry.tps and (shortNumber(entry.tps).."/s") or "--/s" end
