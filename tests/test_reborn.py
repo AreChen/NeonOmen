@@ -98,8 +98,8 @@ def test_styles_and_colors_are_adjustable():
         assert(NeonOmenRebornDB.style == 2)
         settings.scripts.OnGamePadButtonDown(settings, 'PADDRIGHT')
         assert(NeonOmenRebornDB.style == 3)
-        settings.scripts.OnGamePadButtonDown(settings, 'PADRSHOULDER')
-        settings.scripts.OnGamePadButtonDown(settings, 'PADRSHOULDER')
+        settings.scripts.OnGamePadButtonDown(settings, 'PADRTRIGGER')
+        settings.scripts.OnGamePadButtonDown(settings, 'PADRTRIGGER')
         settings.scripts.OnGamePadButtonDown(settings, 'PADDRIGHT')
         assert(NeonOmenRebornDB.red == 0.35)
     """)
@@ -205,7 +205,7 @@ def test_opt_in_gamepad_navigation_and_combat_release():
         assert(settings.padEnabled)
         settings.scripts.OnGamePadButtonDown(settings, 'PADDRIGHT')
         assert(NeonOmenRebornDB.style == 2)
-        settings.scripts.OnGamePadButtonDown(settings, 'PADRSHOULDER')
+        settings.scripts.OnGamePadButtonDown(settings, 'PADRTRIGGER')
         settings.scripts.OnGamePadButtonDown(settings, 'PADDRIGHT')
         assert(NeonOmenRebornDB.width == 300)
         combat=true;settings.scripts.OnEvent(settings, 'PLAYER_REGEN_DISABLED')
@@ -553,6 +553,55 @@ def test_alert_can_shake_meter_without_moving_world_frame():
         NeonOmenRebornDriver.scripts.OnUpdate(NeonOmenRebornDriver,0.2)
         NeonOmenRebornDriver.scripts.OnUpdate(NeonOmenRebornDriver,1)
         assert(NeonOmenRebornMeter.shakeTime==0, 'shake ends and restores the meter')
+    """)
+
+
+def test_optional_world_shake_restores_and_respects_combat_protection():
+    lua=runtime()
+    lua.execute("""
+        local world={points={{'CENTER',UIParent,'CENTER',0,0}},writes=0}
+        function world:GetNumPoints() return #self.points end
+        function world:GetPoint(i) return unpack(self.points[i]) end
+        function world:IsProtected() return self.protected or false end
+        function world:ClearAllPoints() self.writes=self.writes+1;self.points={} end
+        function world:SetPoint(...) self.points[#self.points+1]={...} end
+        WorldFrame=world
+        ns.Set('warningScreenShake',true);ns.TestAlert()
+        local shaker=NeonOmenRebornScreenShake
+        assert(shaker and shaker.shown)
+        shaker.scripts.OnUpdate(shaker,0.1)
+        assert(world.points[1][4]~=0)
+        shaker.scripts.OnUpdate(shaker,1)
+        assert(world.points[1][4]==0 and world.points[1][5]==0 and not shaker.shown)
+        combat=true;world.protected=true
+        local writes=world.writes
+        ns.TestAlert()
+        assert(world.writes==writes and not shaker.shown)
+        combat=false;world.protected=false;ns.TestAlert()
+        shaker.scripts.OnUpdate(shaker,0.1)
+        combat=true;world.protected=true
+        shaker.scripts.OnEvent(shaker,'PLAYER_REGEN_DISABLED')
+        assert(not shaker.shown and shaker.saved, 'defer restoration while protected')
+        combat=false
+        shaker.scripts.OnEvent(shaker,'PLAYER_REGEN_ENABLED')
+        assert(not shaker.saved and world.points[1][4]==0, 'restore after combat')
+    """)
+
+
+def test_gamepad_shoulders_cycle_tabs_and_triggers_cycle_categories():
+    lua=runtime()
+    lua.execute("""
+        SlashCmdList.NEONOMENREBORN()
+        local settings=NeonOmenRebornSettings
+        local function press(key) settings.scripts.OnGamePadButtonDown(settings,key) end
+        assert(settings.heading.text == ns.L.appearance)
+        press('PADRSHOULDER'); assert(settings.heading.text == ns.L.effects)
+        press('PADRSHOULDER'); assert(settings.heading.text == ns.L.barStyle)
+        press('PADLSHOULDER'); assert(settings.heading.text == ns.L.effects)
+        press('PADLTRIGGER'); assert(settings.heading.text == ns.L.controls)
+        press('PADRSHOULDER'); assert(settings.heading.text == ns.L.profilePage)
+        press('PADRSHOULDER'); assert(settings.heading.text == ns.L.controls)
+        press('PADRTRIGGER'); assert(settings.heading.text == ns.L.appearance)
     """)
 
 

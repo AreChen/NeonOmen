@@ -17,7 +17,7 @@ local defaults = {
     height = 180, autoCollapse = true, growUp = false,
     showHeader = true, showAggroLine = true, showAggroBar = true, soundChoice = 1, hidePvp = false,
     barTexture = 4, textureName = "", windowAlpha = 1, showWithPet = true, minimapAngle = 220,
-    warningAggro = true, warningShake=false, animateBars = true, useSelfColor=true, usePetColor=true, useTankColor=true,
+    warningAggro = true, warningShake=false, warningScreenShake=false, animateBars = true, useSelfColor=true, usePetColor=true, useTankColor=true,
     minimapOffset=0,
     selfRed = 0.25, selfGreen = 0.72, selfBlue = 0.85,
     tankRed = 0.95, tankGreen = 0.32, tankBlue = 0.25,
@@ -65,7 +65,7 @@ local text = {
     locked = zh and "鎖定位置" or "Lock position",
     test = zh and "測試資料" or "Preview data",
     padNavigation = zh and "手柄導航" or "Gamepad navigation",
-    padHint = zh and "方向鍵選擇及調整  ·  A 確認  ·  B 關閉  ·  LB/RB 切換頁面" or "D-pad select/change  ·  A select  ·  B close  ·  LB/RB pages",
+    padHint = zh and "方向鍵調整 · A 確認 · B 關閉 · LB/RB 子頁 · LT/RT 分類" or "D-pad adjust · A select · B close · LB/RB tabs · LT/RT categories",
     empty = zh and "目前沒有仇恨資料" or "No threat data",
     on = zh and "開" or "On", off = zh and "關" or "Off",
     solid = zh and "純色" or "Solid", gradient = zh and "漸變" or "Gradient", glass = zh and "玻璃" or "Glass",
@@ -94,6 +94,8 @@ local more = {
     warningMessage={"Alert message","文字警告","文字警告"},
     warningFlash={"Screen flash","螢幕閃光","屏幕闪光"},
     warningShake={"Shake meter on alert","警報時震動仇恨窗","警报时震动仇恨窗"},
+    warningScreenShake={"Shake game world on alert","警報時震動畫面","警报时震动画面"},
+    screenEffects={"Screen effects","畫面效果","画面效果"},
     warningCooldown={"Alert cooldown","警告間隔","警告间隔"},
     suppressTank={"Suppress tank alerts","坦克不警告","坦克不警告"},
     showMinimap={"Minimap button","小地圖按鈕","小地图按钮"},
@@ -206,7 +208,7 @@ if zh and not tw then
     text.style, text.width, text.rowHeight, text.maxRows = "条形样式", "窗口宽度", "条目高度", "最多条目"
     text.opacity, text.classColors, text.showPets = "背景透明度", "职业颜色", "显示宠物"
     text.locked, text.test, text.padNavigation = "锁定位置", "测试数据", "手柄导航"
-    text.padHint = "方向键选择及调整  ·  A 确认  ·  B 关闭  ·  LB/RB 切换页面"
+    text.padHint = "方向键调整 · A 确认 · B 关闭 · LB/RB 子页 · LT/RT 分类"
     text.empty, text.on, text.off, text.solid, text.gradient, text.glass = "目前没有仇恨数据", "开", "关", "纯色", "渐变", "玻璃"
 end
 ns.L = text

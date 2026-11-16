@@ -39,7 +39,7 @@ Under Appearance → Bar glow, adjust each bar's halo intensity and spread
 independently from the window glow.
 
 With gamepad input enabled, the D-pad selects and changes settings, A
-activates, B closes, and the shoulder buttons switch pages. Navigation is
+activates, B closes, LB/RB switches tabs within a category, and LT/RT switches categories. Navigation is
 released during combat.
 
 The client may restrict threat values in some encounters. Restricted names
@@ -49,10 +49,10 @@ rejects a restricted value, the meter displays a placeholder. A readable
 threat status can still trigger a warning.
 
 This is a development build. Visual preview and settings have been checked in
-the Forever client; live group combat, restricted-value behavior in the real
-client and a physical controller still require verification. The older
-full-world screen shake is not implemented; the optional alert instead shakes
-only this addon's window. Profiles use three numbered slots rather than
+the Forever client along with some live combat; the updated controller navigation
+still needs physical verification. Alerts can optionally shake the meter or game
+world separately. World shake is off by default, skips protected frames and
+restores the original position when permitted. Profiles use three numbered slots rather than
 the older addon's named profiles.
 
 ## Development

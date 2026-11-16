@@ -3,7 +3,8 @@ local frame, nav, controls, page = nil, {}, {}, 1
 local selected = 1
 local fighting = false
 local padKeys={PADDUP=true,PADDDOWN=true,PADDLEFT=true,PADDRIGHT=true,
-    PAD1=true,PAD2=true,PADLSHOULDER=true,PADRSHOULDER=true}
+    PAD1=true,PAD2=true,PADLSHOULDER=true,PADRSHOULDER=true,
+    PADLTRIGGER=true,PADRTRIGGER=true}
 local consumed={}
 local function propagate(self,enabled)
     if self.SetPropagateKeyboardInput then pcall(self.SetPropagateKeyboardInput,self,enabled) end
@@ -130,13 +131,14 @@ local pages = {
         {key="barGlowIntensity",kind="number",min=0,max=0.6,step=0.05},
         {key="barGlowSpread",kind="number",min=0.5,max=2,step=0.1},
     }},
+    {key="screenEffects", entries={{key="warningScreenShake",kind="boolean"}, {key="testAlert",kind="action"}}},
 }
 local groups = {
     {key="appearance", pages={1,8,12,20,22}},
     {key="layout", pages={2,10,9,18}},
     {key="colors", pages={3,16,17,19}},
     {key="display", pages={5,6,13,14,15}},
-    {key="warnings", pages={7,11}},
+    {key="warnings", pages={7,11,23}},
     {key="controls", pages={4,21}},
 }
 local function groupForPage(index)
@@ -296,6 +298,16 @@ local function choosePage(index)
     selected=1
     paint()
 end
+local function cycleTab(direction)
+    local group=groups[groupForPage(page)]
+    local current=1
+    for i,index in ipairs(group.pages) do if index==page then current=i;break end end
+    choosePage(group.pages[((current-1+direction)%#group.pages)+1])
+end
+local function cycleGroup(direction)
+    local index=groupForPage(page)
+    choosePage(groups[((index-1+direction)%#groups)+1].pages[1])
+end
 function ns.CreateSettings()
     frame=CreateFrame("Frame","NeonOmenRebornSettings",UIParent)
     frame:SetSize(840,570);frame:SetPoint("CENTER")
@@ -389,8 +401,10 @@ function ns.CreateSettings()
         elseif button=="PADDDOWN" then selected=(selected%#active)+1;paint()
         elseif button=="PADDLEFT" then adjust(active[selected],-1)
         elseif button=="PADDRIGHT" or button=="PAD1" then adjust(active[selected],1)
-        elseif button=="PADLSHOULDER" then choosePage(page-1)
-        elseif button=="PADRSHOULDER" then choosePage(page+1)
+        elseif button=="PADLSHOULDER" then cycleTab(-1)
+        elseif button=="PADRSHOULDER" then cycleTab(1)
+        elseif button=="PADLTRIGGER" then cycleGroup(-1)
+        elseif button=="PADRTRIGGER" then cycleGroup(1)
         elseif button=="PAD2" then frame:Hide() end
         propagate(self,false)
     end)

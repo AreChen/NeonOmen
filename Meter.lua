@@ -158,6 +158,53 @@ local function showForContext()
     if UnitExists("pet") then return ns.db.showWithPet end
     return ns.db.showSolo
 end
+local screenShaker
+local function worldCanMove(world)
+    if not InCombatLockdown() then return true end
+    return safeCall(world.IsProtected,world)==false
+end
+local function restoreWorld(self)
+    if not self.saved then return true end
+    if not worldCanMove(self.world) then self:Hide();return false end
+    local ok=pcall(function()
+        self.world:ClearAllPoints()
+        for _,point in ipairs(self.saved) do self.world:SetPoint(unpack(point,1,5)) end
+    end)
+    if ok then self.saved=false;self.world=false end
+    self:Hide()
+    return ok
+end
+local function shakeWorld()
+    local world=WorldFrame
+    if not world or not world.GetNumPoints or not world.GetPoint or not worldCanMove(world) then return end
+    if screenShaker and screenShaker.saved and not restoreWorld(screenShaker) then return end
+    local count=safeCall(world.GetNumPoints,world)
+    if type(count)~="number" or count<1 or count>8 then return end
+    local saved={}
+    for i=1,count do
+        local ok,a,b,c,x,y=pcall(world.GetPoint,world,i)
+        if not ok or not ns.Safe(a) or not ns.Safe(c) or type(ns.Safe(x))~="number" or type(ns.Safe(y))~="number" then return end
+        if b and not ns.Safe(b) then return end
+        saved[i]={a,b,c,x,y}
+    end
+    if not screenShaker then
+        screenShaker=CreateFrame("Frame","NeonOmenRebornScreenShake",UIParent)
+        screenShaker:RegisterEvent("PLAYER_REGEN_ENABLED")
+        screenShaker:RegisterEvent("PLAYER_REGEN_DISABLED")
+        screenShaker:SetScript("OnEvent",function(self) if self.saved then restoreWorld(self) end end)
+        screenShaker:SetScript("OnUpdate",function(self,dt)
+            self.elapsed=self.elapsed+dt
+            if self.elapsed>=0.45 or not worldCanMove(self.world) then restoreWorld(self);return end
+            local offset=math.sin(self.elapsed*48)*3*(1-self.elapsed/0.45)
+            local ok=pcall(function()
+                self.world:ClearAllPoints()
+                for _,p in ipairs(self.saved) do self.world:SetPoint(p[1],p[2],p[3],p[4]+offset,p[5]) end
+            end)
+            if not ok then restoreWorld(self) end
+        end)
+    end
+    screenShaker.world=world;screenShaker.saved=saved;screenShaker.elapsed=0;screenShaker:Show()
+end
 local function fireAlert(message)
     if ns.db.warningSound then
         local choice=ns.sounds[ns.db.soundChoice] or ns.sounds[1]
@@ -171,6 +218,7 @@ local function fireAlert(message)
     if ns.db.warningMessage and UIErrorsFrame then UIErrorsFrame:AddMessage(message,1,0.3,0.2) end
     if ns.db.warningFlash and meter.flash then meter.flashTime=0.7;meter.flash:Show() end
     if ns.db.warningShake and not meter.dragging and not meter.resizing then meter.shakeTime=0.45 end
+    if ns.db.warningScreenShake then shakeWorld() end
 end
 function ns.TestAlert() if meter then fireAlert(ns.L.title..": 90%") end end
 local function isAssignedOrStanceTank()
