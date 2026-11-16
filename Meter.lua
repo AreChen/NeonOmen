@@ -5,6 +5,7 @@ local history, targetKey, lastWarning, manualHidden = {}, nil, -1000, false
 local aggroTarget, hadAggro, warningTarget, wasNear = nil, nil, nil, false
 local markerTarget, markerHolder, markerUntil = nil, nil, 0
 local trackedUnit
+local gradientDark, gradientLight
 local white = "Interface\\Buttons\\WHITE8X8"
 local samples = {
     {name=ns.L.sampleTank, pct=100, value=10000, tps=320, class="WARRIOR", tank=true},
@@ -275,6 +276,7 @@ local function newRow(index)
     row.threshold = texture(row,"OVERLAY",{1,0.85,0.4,0.95})
     row.threshold:SetSize(2,4)
     row.shade = texture(row, "ARTWORK", {1,1,1,0})
+    row.shadeStyle=false;row.shadeTexture=false
     row.shade:SetAllPoints(row:GetStatusBarTexture())
     row.name = row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     row.name:SetPoint("LEFT", 7, 0); row.name:SetJustifyH("LEFT")
@@ -424,11 +426,17 @@ function ns.RefreshMeter()
                 if db.animateBars then row:SetScript("OnUpdate",row.animate)
                 else row.displayValue=row.targetValue;row:SetValue(row.targetValue);row:SetScript("OnUpdate",nil) end
             end
-            if db.style == 1 then row.shade:SetVertexColor(1,1,1,0)
-            elseif db.style == 2 and row.shade.SetGradient and CreateColor then
-                row.shade:SetVertexColor(1,1,1,1)
-                row.shade:SetGradient("VERTICAL", CreateColor(0,0,0,0.4), CreateColor(1,1,1,0.18))
-            else row.shade:SetVertexColor(1,1,1,db.style == 3 and 0.16 or 0.06) end
+            if row.shadeStyle~=db.style or row.shadeTexture~=fill then
+                if db.style == 1 then row.shade:SetVertexColor(1,1,1,0)
+                elseif db.style == 2 and row.shade.SetGradient and CreateColor then
+                    if not gradientDark then
+                        gradientDark=CreateColor(0,0,0,0.4);gradientLight=CreateColor(1,1,1,0.18)
+                    end
+                    row.shade:SetVertexColor(1,1,1,1)
+                    row.shade:SetGradient("VERTICAL",gradientDark,gradientLight)
+                else row.shade:SetVertexColor(1,1,1,db.style == 3 and 0.16 or 0.06) end
+                row.shadeStyle=db.style;row.shadeTexture=fill
+            end
             row:Show()
         else row:Hide() end
     end

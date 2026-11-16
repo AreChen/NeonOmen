@@ -50,6 +50,7 @@ def runtime(locale="enUS"):
         function M:SetFont(path,size,flags) self.fontPath=path;self.fontSize=size end
         function M:SetFormattedText(fmt,...) if rejectSecretFormat then error('restricted') end;self.formatted={fmt,...} end
         function M:SetVertexColor(...) self.color={...} end
+        function M:SetGradient(...) self.gradientCount=(rawget(self,'gradientCount') or 0)+1;self.gradient={...} end
         function M:SetValue(v) if rejectSecretValue and type(v)=='table' and v.secret then error('restricted') end;self.statusValue=v end
         function M:SetAlpha(v) self.alpha=v end
         function M:SetStatusBarColor(...) self.barColor={...} end
@@ -97,6 +98,24 @@ def test_long_target_title_reserves_room_for_the_column_heading():
         assert(NeonOmenRebornMeter.title.width == 75)
         ns.Set('showHeader',false)
         assert(NeonOmenRebornMeter.title.width == 144)
+    """)
+
+
+def test_bar_gradient_is_reused_until_style_or_texture_changes():
+    lua=runtime()
+    lua.execute("""
+        local row
+        for _,f in ipairs(frames) do
+            if f.kind=='StatusBar' and rawget(f,'shade') and rawget(f,'name') then row=f;break end
+        end
+        assert(row and row.shade.gradientCount==1)
+        ns.RefreshMeter();ns.RefreshMeter()
+        assert(row.shade.gradientCount==1, 'unchanged rows should not rebuild gradients')
+        ns.Set('barTexture',1)
+        assert(row.shade.gradientCount==2, 'changing texture reapplies its gradient')
+        ns.Set('style',1)
+        ns.Set('style',2)
+        assert(row.shade.gradientCount==3, 'returning to gradient style restores it')
     """)
 
 
