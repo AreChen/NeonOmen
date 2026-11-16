@@ -4,6 +4,7 @@ local meter, rows, elapsed = nil, {}, 0
 local history, targetKey, lastWarning, manualHidden = {}, nil, -1000, false
 local aggroTarget, hadAggro, warningTarget, wasNear = nil, nil, nil, false
 local markerTarget, markerHolder, markerUntil = nil, nil, 0
+local trackedUnit
 local white = "Interface\\Buttons\\WHITE8X8"
 local samples = {
     {name=ns.L.sampleTank, pct=100, value=10000, tps=320, class="WARRIOR", tank=true},
@@ -56,7 +57,7 @@ local function findTarget()
             if unit == "targettarget" or unit == "focustarget" then
                 for i=1,40 do
                     local plate="nameplate"..i
-                    if UnitExists(plate) and UnitIsUnit and ns.Safe(UnitIsUnit(plate,unit)) then return plate end
+                    if UnitExists(plate) and UnitIsUnit and ns.Safe(UnitIsUnit(plate,unit)) then return plate,unit end
                 end
             end
             return unit
@@ -79,7 +80,8 @@ function ns.Debug()
 end
 local function gather()
     if ns.db.test then return samples end
-    local target = findTarget()
+    local target,source = findTarget()
+    trackedUnit=source or target
     if not target then history={};targetKey=nil;return {} end
     local guid = UnitGUID and ns.Safe(UnitGUID(target)) or target
     if guid ~= targetKey then history={};targetKey=guid end
@@ -171,7 +173,7 @@ local function maybeAlert(data, target)
     if ns.db.test then return end
     local now = GetTime and GetTime() or 0
     local role = UnitGroupRolesAssigned and ns.Safe(UnitGroupRolesAssigned("player"))
-    local targetID = target and UnitGUID and ns.Safe(UnitGUID(target))
+    local targetID = target and ((UnitGUID and ns.Safe(UnitGUID(target))) or target)
     local attackingPlayer = target and UnitIsUnit and ns.Safe(UnitIsUnit(target.."target", "player")) or false
     local gained = targetID and aggroTarget == targetID and hadAggro == false and attackingPlayer
     aggroTarget, hadAggro = targetID, not not attackingPlayer
@@ -469,6 +471,19 @@ function ns.CreateMeter()
         if meter.flashTime<=0 then self:Hide() else self:SetAlpha(meter.flashTime/0.7) end
     end)
     local driver=CreateFrame("Frame","NeonOmenRebornDriver",UIParent)
+    driver:RegisterEvent("PLAYER_TARGET_CHANGED")
+    driver:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    driver:RegisterEvent("UNIT_TARGET")
+    driver:SetScript("OnEvent",function(_,event,unit)
+        local changed=event=="PLAYER_TARGET_CHANGED"
+            or (event=="PLAYER_FOCUS_CHANGED" and ns.db.useFocus)
+            or (event=="UNIT_TARGET" and ((unit=="target" and trackedUnit=="targettarget")
+                or (unit=="focus" and trackedUnit=="focustarget")))
+        if not changed then return end
+        history={};targetKey=nil;markerTarget=nil;markerHolder=nil;markerUntil=0
+        aggroTarget=nil;hadAggro=nil;warningTarget=nil;wasNear=false
+        ns.RefreshMeter()
+    end)
     driver:SetScript("OnUpdate",function(_,dt)
         if meter.shakeTime>0 and not meter.dragging and not meter.resizing then
             meter.shakeTime=max(0,meter.shakeTime-dt)

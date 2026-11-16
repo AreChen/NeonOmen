@@ -151,6 +151,25 @@ def test_threat_rate_does_not_use_samples_older_than_ten_seconds():
     """)
 
 
+def test_target_change_resets_tps_when_target_guid_is_restricted():
+    lua=runtime()
+    lua.execute("""
+        local secret={secret=true}
+        issecretvalue=function(value) return type(value)=='table' and value.secret end
+        UnitGUID=function(unit) if unit=='target' then return secret end return unit end
+        now=1;threat=1200;ns.RefreshMeter()
+        now=3;threat=1600;ns.RefreshMeter()
+        now=4;threat=2000
+        local driver=NeonOmenRebornDriver
+        driver.scripts.OnEvent(driver,'PLAYER_TARGET_CHANGED')
+        local reset=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and rawget(f,'text')=='--/s  67%' then reset=true end
+        end
+        assert(reset,'the new target must not reuse the old target TPS history')
+    """)
+
+
 def test_opt_in_gamepad_navigation_and_combat_release():
     lua = runtime()
     lua.execute("""
