@@ -89,6 +89,17 @@ def test_startup_meter_and_persisted_settings():
     """)
 
 
+def test_long_target_title_reserves_room_for_the_column_heading():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('width',160)
+        ns.Set('showHeader',true)
+        assert(NeonOmenRebornMeter.title.width == 75)
+        ns.Set('showHeader',false)
+        assert(NeonOmenRebornMeter.title.width == 144)
+    """)
+
+
 def test_styles_and_colors_are_adjustable():
     lua = runtime()
     lua.execute("""
