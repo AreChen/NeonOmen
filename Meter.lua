@@ -459,10 +459,10 @@ local function openContextMenu(owner)
 end
 function ns.CreateMeter()
     meter = CreateFrame("Frame","NeonOmenRebornMeter",UIParent)
-    meter:SetDontSavePosition(true); meter:SetUserPlaced(false)
     meter.resizing=false;meter.dragging=false;meter.shakeTime=0
     meter:SetPoint("CENTER",UIParent,"CENTER",ns.db.x,ns.db.y)
     meter:SetClampedToScreen(true); meter:SetMovable(true); meter:EnableMouse(true)
+    meter:SetDontSavePosition(true); meter:SetUserPlaced(false)
     meter:SetResizable(true)
     if meter.SetResizeBounds then meter:SetResizeBounds(160,70,600,600) end
     meter:RegisterForDrag("LeftButton")

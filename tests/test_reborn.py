@@ -47,7 +47,8 @@ def runtime(locale="enUS"):
         function M:GetWidth() return self.width end
         function M:SetPoint(...) self.point={...} end
         function M:SetDontSavePosition(v) self.dontSavePosition=v end
-        function M:SetUserPlaced(v) self.userPlaced=v end
+        function M:SetMovable(v) self.movable=v end
+        function M:SetUserPlaced(v) assert(rawget(self,'movable'), 'Frame is not movable or resizable');self.userPlaced=v end
         function M:StopMovingOrSizing() self.userPlaced=true end
         function M:SetText(s) if rejectSecretText and type(s)=='table' and s.secret then error('restricted') end;self.text=s end
         function M:SetFont(path,size,flags) self.fontPath=path;self.fontSize=size end
