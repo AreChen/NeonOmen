@@ -1,0 +1,6 @@
+<Bindings>
+    <Binding name="NEONOMENREBORN_TOGGLE" header="NEONOMENREBORN">NeonOmenReborn_Toggle()</Binding>
+    <Binding name="NEONOMENREBORN_FOCUS">NeonOmenReborn_ToggleFocus()</Binding>
+    <Binding name="NEONOMENREBORN_PREVIEW">NeonOmenReborn_TogglePreview()</Binding>
+    <Binding name="NEONOMENREBORN_SETTINGS">NeonOmenReborn_ToggleSettings()</Binding>
+</Bindings>

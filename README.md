@@ -22,6 +22,10 @@ font and layout, automatic height, class and pet filters, visibility rules,
 focus targets, TPS, a pull boundary when it can be calculated reliably, and
 configurable warning sound, text, flash and meter shake. The boundary is only
 displayed when readable client data distinguishes 110% from 130%.
+Built-in materials include rounded neon; fonts and bar textures registered
+with LibSharedMedia are also available when another addon provides the library.
+The controls page offers three independent profile slots that remember changes
+when you switch between them.
 
 With gamepad input enabled, the D-pad selects and changes settings, A
 activates, B closes, and the shoulder buttons switch pages. Navigation is
@@ -37,7 +41,8 @@ This is a development build. Visual preview and settings have been checked in
 the Forever client; live group combat, restricted-value behavior in the real
 client and a physical controller still require verification. The older
 full-world screen shake is not implemented; the optional alert instead shakes
-only this addon's window. Saved profiles are not available.
+only this addon's window. Profiles use three numbered slots rather than
+the older addon's named profiles.
 
 ## Development
 

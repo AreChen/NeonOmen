@@ -240,6 +240,14 @@ function ns.RefreshMeter()
     local targetName = target and ns.Safe(UnitName(target))
     meter.title:SetText(db.test and ns.L.previewTitle or (db.showTarget and type(targetName)=="string" and targetName or ns.L.title))
     meter.empty:SetShown(count == 0)
+    local fontObject=({GameFontHighlightSmall,GameFontHighlight,GameFontNormal})[db.font] or GameFontHighlightSmall
+    local fontPath,fontFlags
+    fontPath=ns.MediaPath("font",db.fontName)
+    local barTexture=ns.MediaPath("statusbar",db.textureName) or ns.barTextures[db.barTexture] or white
+    if not fontPath and fontObject and fontObject.GetFont then
+        local size
+        fontPath,size,fontFlags=fontObject:GetFont()
+    end
     for i=1,max(#rows,count) do
         local row = rows[i] or newRow(i)
         local entry = data[i]
@@ -279,7 +287,7 @@ function ns.RefreshMeter()
             elseif entry.tank and db.useTankColor then r,g,b=db.tankRed,db.tankGreen,db.tankBlue end
             row:SetStatusBarColor(r,g,b,db.barAlpha)
             row.glow:SetVertexColor(r,g,b,db.glow and min(1,db.glowIntensity*1.35) or 0)
-            local fill = ns.barTextures[db.barTexture] or white
+            local fill = barTexture
             if row.currentTexture ~= fill then
                 row:SetStatusBarTexture(fill)
                 row.shade:SetAllPoints(row:GetStatusBarTexture())
@@ -288,11 +296,9 @@ function ns.RefreshMeter()
                 row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",8,-7)
                 row.currentTexture=fill
             end
-            local fonts = {GameFontHighlightSmall, GameFontHighlight, GameFontNormal}
-            local fontObject = fonts[db.font] or GameFontHighlightSmall
-            if fontObject and fontObject.GetFont then
-                local path,_,flags = fontObject:GetFont()
-                if path then row.name:SetFont(path,db.fontSize,flags); row.value:SetFont(path,db.fontSize,flags) end
+            if fontPath and (row.fontPath~=fontPath or row.fontSize~=db.fontSize or row.fontFlags~=fontFlags) then
+                row.name:SetFont(fontPath,db.fontSize,fontFlags);row.value:SetFont(fontPath,db.fontSize,fontFlags)
+                row.fontPath,row.fontSize,row.fontFlags=fontPath,db.fontSize,fontFlags
             end
             if entry.secretPct then
                 row.targetValue=nil;row.displayValue=nil;row:SetScript("OnUpdate",nil)

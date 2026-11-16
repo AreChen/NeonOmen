@@ -72,7 +72,7 @@ local pages = {
         {key="testAlert",kind="action"},
     }},
     {key="barStyle", entries={
-        {key="barTexture",kind="choice",count=3},
+        {key="barTexture",kind="choice",count=4},
         {key="style",kind="choice",count=3},
         {key="barAlpha",kind="number",min=0.1,max=1,step=0.1},
         {key="classColors",kind="boolean"},
@@ -109,14 +109,23 @@ local pages = {
         {key="animateBars",kind="boolean"},
         {key="showAggroBar",kind="boolean"},
     }},
+    {key="fonts", entries={
+        {key="fontName",kind="mediafont"}, {key="font",kind="choice",count=3},
+        {key="fontSize",kind="number",min=9,max=24,step=1},
+    }},
+    {key="mediaStyle", entries={
+        {key="textureName",kind="mediatexture"},
+        {key="barTexture",kind="choice",count=4},
+    }},
+    {key="profilePage", entries={{key="profileSlot",kind="profile"}}},
 }
 local groups = {
-    {key="appearance", pages={1,8,12}},
+    {key="appearance", pages={1,8,12,20}},
     {key="layout", pages={2,10,9,18}},
-    {key="colors", pages={3,16,17}},
+    {key="colors", pages={3,16,17,19}},
     {key="display", pages={5,6,13,14,15}},
     {key="warnings", pages={7,11}},
-    {key="controls", pages={4}},
+    {key="controls", pages={4,21}},
 }
 local function groupForPage(index)
     for groupIndex,group in ipairs(groups) do
@@ -147,20 +156,37 @@ local function smallButton(parent, caption)
 end
 local function readableValue(entry)
     local value=ns.db[entry.key]
+    if entry.kind=="profile" then return ns.L.profilePage.." "..value end
+    if entry.kind=="mediafont" or entry.kind=="mediatexture" then return value ~= "" and value or ns.L[entry.kind=="mediafont" and "defaultFont" or "defaultTexture"] end
     if entry.kind=="action" then return "▶" end
     if entry.kind=="color" then return "..." end
     if entry.kind=="boolean" then return value and ns.L.on or ns.L.off end
     if entry.kind=="choice" then
         if entry.key=="font" then return ns.L[({"fontSmall", "fontRegular", "fontTitle"})[value]] end
         if entry.key=="soundChoice" then return ns.L[(ns.sounds[value] or ns.sounds[1])[2]] end
-        if entry.key=="barTexture" then return ns.L[({"textureFlat", "textureClassic", "textureSoft"})[value]] end
+        if entry.key=="barTexture" then return ns.L[({"textureFlat", "textureClassic", "textureSoft", "textureNeon"})[value]] end
         return ({ns.L.solid,ns.L.gradient,ns.L.glass})[value]
     end
     if entry.key=="opacity" or entry.key=="windowAlpha" or entry.key=="red" or entry.key=="green" or entry.key=="blue" or entry.key=="barAlpha" then return string.format("%d%%",math.floor(value*100+0.5)) end
     return tostring(value)
 end
 local function adjust(entry, direction)
+    if entry.kind=="profile" then ns.SwitchProfile(((ns.db.profileSlot-1+direction)%3)+1);return end
     if entry.kind=="action" then if entry.key=="testAlert" then ns.TestAlert() end;return end
+    if entry.kind=="mediafont" or entry.kind=="mediatexture" then
+        local options={""}
+        local media=ns.SharedMedia()
+        if media and media.List then
+            local ok,names=pcall(media.List,media,entry.kind=="mediafont" and "font" or "statusbar")
+            if ok and type(names)=="table" then
+                for _,name in ipairs(names) do options[#options+1]=name end
+            end
+        end
+        local current=1
+        for i,name in ipairs(options) do if name==ns.db[entry.key] then current=i;break end end
+        ns.Set(entry.key,options[((current-1+direction)%#options)+1])
+        return
+    end
     if entry.kind=="color" then
         if not ColorPickerFrame then return end
         local keys=entry.prefix and {entry.prefix.."Red",entry.prefix.."Green",entry.prefix.."Blue"} or {"red","green","blue"}
@@ -221,7 +247,7 @@ local function paint()
     frame.preview:SetStatusBarColor(ns.db.red,ns.db.green,ns.db.blue,ns.db.barAlpha)
     frame.lockButton.caption:SetText(ns.db.locked and ns.L.unlockAction or ns.L.lockAction)
     frame.previewButton.caption:SetText(ns.db.test and ns.L.previewOff or ns.L.previewOn)
-    local previewTexture=ns.barTextures[ns.db.barTexture] or ns.barTextures[1]
+    local previewTexture=ns.MediaPath("statusbar",ns.db.textureName) or ns.barTextures[ns.db.barTexture] or ns.barTextures[1]
     if frame.preview.currentTexture~=previewTexture then
         frame.preview:SetStatusBarTexture(previewTexture)
         frame.preview.shade:SetAllPoints(frame.preview:GetStatusBarTexture())
@@ -319,7 +345,7 @@ function ns.CreateSettings()
     reset:SetSize(176,25);reset:SetPoint("LEFT",frame.previewButton,"RIGHT",12,0)
     reset:SetScript("OnClick",function() ns.ResetMeter() end)
     local hint=label(frame,ns.L.padHint,"GameFontDisableSmall")
-    hint:SetPoint("BOTTOMLEFT",232,28);hint:SetWidth(570)
+    hint:SetPoint("BOTTOMLEFT",242,12);hint:SetWidth(556)
     frame:SetScript("OnGamePadButtonDown",function(_,button)
         if not ns.db.padNavigation or InCombatLockdown() then return end
         if button=="PADDUP" then selected=((selected-2)%#active)+1;paint()

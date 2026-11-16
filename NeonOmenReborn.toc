@@ -4,6 +4,7 @@
 ## Author: AreChen
 ## Version: 0.1.0-dev
 ## SavedVariables: NeonOmenRebornDB
+## OptionalDeps: LibSharedMedia-3.0, Details
 
 Core.lua
 Meter.lua

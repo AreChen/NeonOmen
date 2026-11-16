@@ -4,7 +4,7 @@ local defaults = {
     style = 2, classColors = true, showPets = true, locked = false,
     test = false, padNavigation = true, x = 180, y = 0,
     red = 0.25, green = 0.72, blue = 0.85, barAlpha = 0.95,
-    fontSize = 12, font = 1,
+    fontSize = 12, font = 1, fontName = "",
     spacing = 3, scale = 1, showValue = false, showTPS = true,
     useFocus = false, showTitle = true, showTarget = true,
     showCombat = true, showOutOfCombat = true, showSolo = true,
@@ -15,7 +15,7 @@ local defaults = {
     showSelf = true, clickThrough = false, showMarker = true,
     height = 180, autoCollapse = true, growUp = false,
     showHeader = true, showAggroLine = true, showAggroBar = true, soundChoice = 1, hidePvp = false,
-    barTexture = 1, windowAlpha = 1, showWithPet = true, minimapAngle = 220,
+    barTexture = 4, textureName = "", windowAlpha = 1, showWithPet = true, minimapAngle = 220,
     warningAggro = true, warningShake=false, animateBars = true, useSelfColor=true, usePetColor=true, useTankColor=true,
     minimapOffset=0,
     selfRed = 0.25, selfGreen = 0.72, selfBlue = 0.85,
@@ -36,6 +36,7 @@ ns.barTextures = {
     "Interface\\Buttons\\WHITE8X8",
     "Interface\\TargetingFrame\\UI-StatusBar",
     "Interface\\RaidFrame\\Raid-Bar-Hp-Fill",
+    "Interface\\AddOns\\NeonOmenReborn\\Media\\NeonBar",
 }
 local locale = GetLocale()
 local zh = locale == "zhCN" or locale == "zhTW"
@@ -106,9 +107,22 @@ local more = {
     previewOn={"Show preview","顯示預覽","显示预览"},
     previewOff={"Hide preview","關閉預覽","关闭预览"},
     resetPosition={"Reset position","重設位置","重置位置"},
+    bindingToggle={"Toggle threat meter","顯示／隱藏仇恨窗","显示／隐藏仇恨窗"},
+    bindingFocus={"Toggle focus target","切換焦點目標","切换焦点目标"},
+    bindingPreview={"Toggle preview","切換預覽","切换预览"},
+    bindingSettings={"Open settings","開啟設定","打开设置"},
     openSettings={"Open NeonOmen settings","開啟 NeonOmen 設定","打开 NeonOmen 设置"},
     barStyle={"Bar materials","條形材質","条形材质"},
     barTexture={"Bar texture","條形紋理","条形纹理"},
+    textureNeon={"Rounded neon","圓角霓虹","圆角霓虹"},
+    profilePage={"Profiles","設定檔","配置方案"},
+    profileSlot={"Active profile","目前設定檔","当前配置方案"},
+    fonts={"Fonts","字體","字体"},
+    mediaStyle={"Shared media","共享材質","共享材质"},
+    textureName={"Shared bar texture","共享條形紋理","共享条形纹理"},
+    fontName={"Shared font","共享字體","共享字体"},
+    defaultFont={"Game font","遊戲字體","游戏字体"},
+    defaultTexture={"Built-in texture","內建紋理","内置纹理"},
     fontSmall={"Small","小字體","小字体"}, fontRegular={"Standard","標準","标准"}, fontTitle={"Title","標題","标题"},
     textureFlat={"Flat","平滑","平滑"}, textureClassic={"Classic","經典","经典"}, textureSoft={"Soft","柔和","柔和"},
     soundRaid={"Raid warning","團隊警報","团队警报"}, soundReady={"Ready check","準備確認","准备确认"},
@@ -174,9 +188,26 @@ if zh and not tw then
     text.empty, text.on, text.off, text.solid, text.gradient, text.glass = "目前没有仇恨数据", "开", "关", "纯色", "渐变", "玻璃"
 end
 ns.L = text
+BINDING_HEADER_NEONOMENREBORN = "NeonOmen Reborn"
+BINDING_NAME_NEONOMENREBORN_TOGGLE = text.bindingToggle
+BINDING_NAME_NEONOMENREBORN_FOCUS = text.bindingFocus
+BINDING_NAME_NEONOMENREBORN_PREVIEW = text.bindingPreview
+BINDING_NAME_NEONOMENREBORN_SETTINGS = text.bindingSettings
 function ns.Safe(value)
     if issecretvalue and issecretvalue(value) then return nil end
     return value
+end
+function ns.SharedMedia()
+    if not LibStub then return nil end
+    local ok,media=pcall(LibStub,"LibSharedMedia-3.0",true)
+    if ok then return media end
+end
+function ns.MediaPath(kind,name)
+    if not name or name=="" then return nil end
+    local media=ns.SharedMedia()
+    if not media or not media.Fetch then return nil end
+    local ok,path=pcall(media.Fetch,media,kind,name,true)
+    if ok and type(path)=="string" then return path end
 end
 function ns.InitDB()
     if type(NeonOmenRebornDB) ~= "table" then NeonOmenRebornDB = {} end
@@ -184,15 +215,43 @@ function ns.InitDB()
         if NeonOmenRebornDB[key] == nil then NeonOmenRebornDB[key] = value end
     end
     NeonOmenRebornDB.test = false
+    if type(NeonOmenRebornDB.profiles) ~= "table" then NeonOmenRebornDB.profiles={} end
+    if type(NeonOmenRebornDB.profileSlot) ~= "number" or NeonOmenRebornDB.profileSlot < 1 or NeonOmenRebornDB.profileSlot > 3 then NeonOmenRebornDB.profileSlot=1 end
     ns.db = NeonOmenRebornDB
+end
+function ns.SwitchProfile(slot)
+    if not ns.db or type(slot)~="number" or slot<1 or slot>3 or slot==ns.db.profileSlot then return end
+    local db=ns.db
+    local previous={}
+    for key,value in pairs(db) do
+        if key~="test" and (defaults[key]~=nil or (type(key)=="string" and key:match("^hide_"))) then previous[key]=value end
+    end
+    db.profiles[db.profileSlot]=previous
+    local target=db.profiles[slot] or {}
+    for key in pairs(db) do if type(key)=="string" and key:match("^hide_") then db[key]=nil end end
+    for key,value in pairs(defaults) do db[key]=target[key]~=nil and target[key] or value end
+    -- False is a valid setting and must survive a profile change.
+    for key,value in pairs(target) do db[key]=value end
+    db.test=false;db.profileSlot=slot
+    local meter=_G.NeonOmenRebornMeter
+    if meter then meter:ClearAllPoints();meter:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y) end
+    if ns.RefreshMeter then ns.RefreshMeter() end
+    if ns.RefreshSettings then ns.RefreshSettings() end
+    if ns.UpdateMinimap then ns.UpdateMinimap() end
 end
 function ns.Set(key, value)
     ns.db[key] = value
+    if key == "barTexture" then ns.db.textureName="" end
+    if key == "font" then ns.db.fontName="" end
     if key == "locked" and not value then ns.db.clickThrough = false end
     if ns.RefreshMeter then ns.RefreshMeter() end
     if ns.RefreshSettings then ns.RefreshSettings() end
     if ns.UpdateMinimap then ns.UpdateMinimap() end
 end
+function NeonOmenReborn_Toggle() if ns.ToggleMeter then ns.ToggleMeter() end end
+function NeonOmenReborn_ToggleFocus() if ns.db then ns.Set("useFocus",not ns.db.useFocus) end end
+function NeonOmenReborn_TogglePreview() if ns.db then ns.Set("test",not ns.db.test) end end
+function NeonOmenReborn_ToggleSettings() if ns.ToggleSettings then ns.ToggleSettings() end end
 local events = CreateFrame("Frame")
 events:RegisterEvent("ADDON_LOADED")
 events:SetScript("OnEvent", function(_, event, name)
@@ -213,5 +272,8 @@ SlashCmdList.NEONOMENREBORN = function(message)
     elseif command == "unlock" then ns.Set("locked",false)
     elseif command == "toggle" and ns.ToggleMeter then ns.ToggleMeter()
     elseif command == "reset" and ns.ResetMeter then ns.ResetMeter()
+    elseif command == "focus" then NeonOmenReborn_ToggleFocus()
+    elseif command == "pets" then ns.Set("showPets",not ns.db.showPets)
+    elseif command == "minimap" then ns.Set("showMinimap",not ns.db.showMinimap)
     elseif ns.ToggleSettings then ns.ToggleSettings() end
 end

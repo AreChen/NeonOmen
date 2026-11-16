@@ -44,11 +44,15 @@ def runtime(locale="enUS"):
         function M:GetScript(key) return self.scripts[key] end
         function M:SetSize(w,h) self.width=w;self.height=h end
         function M:SetWidth(w) assert(w>=0, 'width must not be negative');self.width=w end
+        function M:GetWidth() return self.width end
+        function M:SetPoint(...) self.point={...} end
         function M:SetText(s) if rejectSecretText and type(s)=='table' and s.secret then error('restricted') end;self.text=s end
+        function M:SetFont(path,size,flags) self.fontPath=path;self.fontSize=size end
         function M:SetFormattedText(fmt,...) if rejectSecretFormat then error('restricted') end;self.formatted={fmt,...} end
         function M:SetVertexColor(...) self.color={...} end
         function M:SetValue(v) if rejectSecretValue and type(v)=='table' and v.secret then error('restricted') end;self.statusValue=v end
         function M:SetStatusBarColor(...) self.barColor={...} end
+        function M:SetStatusBarTexture(path) self.barTexture=path end
         function M:GetStatusBarTexture() self.status=self.status or CreateFrame('Texture');return self.status end
         function M:Show() self.shown=true;if self.scripts.OnShow then self.scripts.OnShow(self) end end
         function M:Hide() self.shown=false;if self.scripts.OnHide then self.scripts.OnHide(self) end end
@@ -456,4 +460,76 @@ def test_preview_is_disabled_on_combat_entry():
             if f.kind=='FontString' and f.text=='Tester' and f.parent.shown then found=true end
         end
         assert(found, 'real data replaces preview data')
+    """)
+
+
+def test_slash_commands_and_binding_actions_control_the_meter():
+    lua=runtime()
+    lua.execute("""
+        SlashCmdList.NEONOMENREBORN('pets')
+        assert(not NeonOmenRebornDB.showPets)
+        SlashCmdList.NEONOMENREBORN('focus')
+        assert(NeonOmenRebornDB.useFocus)
+        SlashCmdList.NEONOMENREBORN('minimap')
+        assert(not NeonOmenRebornDB.showMinimap)
+        NeonOmenReborn_ToggleFocus()
+        assert(not NeonOmenRebornDB.useFocus)
+        NeonOmenReborn_TogglePreview()
+        assert(NeonOmenRebornDB.test)
+    """)
+
+
+def test_minimap_button_radius_follows_minimap_size():
+    lua=runtime()
+    lua.execute("""
+        Minimap=CreateFrame('Frame')
+        Minimap:SetWidth(240)
+        ns.db.minimapAngle=0;ns.db.minimapOffset=0
+        ns.CreateMinimap()
+        local button=NeonOmenRebornMinimapButton
+        assert(button.point[4] > 120, 'button should follow the outer rim of a resized minimap')
+    """)
+
+
+def test_shared_media_font_is_used_when_available():
+    lua=runtime()
+    lua.execute("""
+        local media={Fetch=function(_,kind,name) if kind=='font' and name=='Custom' then return 'Fonts/Custom.ttf' end end}
+        LibStub=function() return media end
+        ns.Set('fontName','Custom')
+        ns.RefreshMeter()
+        local found=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and rawget(f,'fontPath')=='Fonts/Custom.ttf' then found=true end
+        end
+        assert(found, 'registered shared-media font should be applied')
+    """)
+
+
+def test_shared_media_texture_is_used_when_available():
+    lua=runtime()
+    lua.execute("""
+        local media={Fetch=function(_,kind,name) if kind=='statusbar' and name=='Custom bar' then return 'Textures/Custom.tga' end end}
+        LibStub=function() return media end
+        ns.Set('textureName','Custom bar')
+        ns.RefreshMeter()
+        local found=false
+        for _,f in ipairs(frames) do
+            if f.kind=='StatusBar' and rawget(f,'barTexture')=='Textures/Custom.tga' then found=true end
+        end
+        assert(found, 'registered shared-media bar texture should be applied')
+    """)
+
+
+def test_profiles_keep_settings_independent_and_preview_disabled():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('width', 360);ns.Set('hide_MAGE',true);ns.Set('test',true)
+        ns.SwitchProfile(2)
+        assert(ns.db.width==280 and not ns.db.hide_MAGE and not ns.db.test)
+        ns.Set('width', 420)
+        ns.SwitchProfile(1)
+        assert(ns.db.width==360 and ns.db.hide_MAGE and not ns.db.test)
+        ns.SwitchProfile(2)
+        assert(ns.db.width==420 and not ns.db.hide_MAGE)
     """)

@@ -4,7 +4,8 @@ local function position()
     if not button then return end
     local angle=math.rad(ns.db.minimapAngle)
     button:ClearAllPoints()
-    local radius=80+ns.db.minimapOffset
+    local width=Minimap and Minimap.GetWidth and ns.Safe(Minimap:GetWidth())
+    local radius=(type(width)=="number" and width>0 and width/2+8 or 80)+ns.db.minimapOffset
     button:SetPoint("CENTER",Minimap or UIParent,"CENTER",math.cos(angle)*radius,math.sin(angle)*radius)
 end
 
