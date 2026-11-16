@@ -105,6 +105,9 @@ local more = {
     barGlow={"Show bar glow","顯示條形光暈","显示条形光晕"},
     barGlowIntensity={"Bar glow intensity","條形光暈強度","条形光晕强度"},
     barGlowSpread={"Bar glow spread","條形光暈範圍","条形光晕范围"},
+    debugTarget={"Target","目標","目标"},
+    debugData={"Threat status / scaled / raw / value","仇恨狀態／比例／原始比例／數值","仇恨状态／比例／原始比例／数值"},
+    debugUnavailable={"unavailable or restricted","不可用或受限","不可用或受限"},
     colorPicker={"Choose bar color","選擇條形顏色","选择条形颜色"},
     geometry={"Window size","視窗尺寸","窗口尺寸"},
     alertSound={"Alert options","警報選項","警报选项"},
@@ -296,5 +299,6 @@ SlashCmdList.NEONOMENREBORN = function(message)
     elseif command == "focus" then NeonOmenReborn_ToggleFocus()
     elseif command == "pets" then ns.Set("showPets",not ns.db.showPets)
     elseif command == "minimap" then ns.Set("showMinimap",not ns.db.showMinimap)
+    elseif command == "debug" and ns.Debug then ns.Debug()
     elseif ns.ToggleSettings then ns.ToggleSettings() end
 end

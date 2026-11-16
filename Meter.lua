@@ -63,6 +63,20 @@ local function findTarget()
         end
     end
 end
+function ns.Debug()
+    local target=findTarget()
+    local unavailable=ns.L.debugUnavailable
+    local function describe(value)
+        value=ns.Safe(value)
+        if type(value)=="number" or type(value)=="boolean" or type(value)=="string" then return tostring(value) end
+        return unavailable
+    end
+    print("NeonOmen Reborn | "..ns.L.debugTarget..": "..describe(target).." ("..describe(target and safeCall(UnitName,target))..")")
+    if not target or not UnitDetailedThreatSituation then return end
+    local ok,_,status,scaled,raw,value=pcall(UnitDetailedThreatSituation,"player",target)
+    if not ok then print(ns.L.debugData..": "..unavailable);return end
+    print(ns.L.debugData..": "..describe(status).." / "..describe(scaled).." / "..describe(raw).." / "..describe(value))
+end
 local function gather()
     if ns.db.test then return samples end
     local target = findTarget()

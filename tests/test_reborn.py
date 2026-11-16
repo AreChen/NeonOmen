@@ -622,6 +622,22 @@ def test_slash_commands_and_binding_actions_control_the_meter():
     """)
 
 
+def test_debug_command_reports_current_target_and_handles_restricted_values():
+    lua=runtime()
+    lua.execute("""
+        local output={}
+        print=function(...) for _,v in ipairs({...}) do output[#output+1]=v end end
+        SlashCmdList.NEONOMENREBORN('debug')
+        assert(#output>0, 'diagnostic command must print current state')
+        local joined=table.concat(output,' ')
+        assert(joined:find('target',1,true), 'diagnostics should identify the target unit')
+        local secret={secret=true}
+        issecretvalue=function(v) return type(v)=='table' and v.secret end
+        UnitDetailedThreatSituation=function() return false,1,secret,secret,secret end
+        SlashCmdList.NEONOMENREBORN('debug')
+    """)
+
+
 def test_minimap_button_radius_follows_minimap_size():
     lua=runtime()
     lua.execute("""
