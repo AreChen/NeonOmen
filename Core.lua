@@ -108,6 +108,7 @@ local more = {
     debugTarget={"Target","目標","目标"},
     debugData={"Threat status / scaled / raw / value","仇恨狀態／比例／原始比例／數值","仇恨状态／比例／原始比例／数值"},
     debugUnavailable={"unavailable or restricted","不可用或受限","不可用或受限"},
+    hideWindow={"Hide window","隱藏視窗","隐藏窗口"},
     colorPicker={"Choose bar color","選擇條形顏色","选择条形颜色"},
     geometry={"Window size","視窗尺寸","窗口尺寸"},
     alertSound={"Alert options","警報選項","警报选项"},

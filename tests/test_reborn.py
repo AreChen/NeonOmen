@@ -484,6 +484,28 @@ def test_minimap_shift_click_toggles_meter_without_opening_settings():
     """)
 
 
+def test_meter_context_menu_exposes_common_controls():
+    lua=runtime()
+    lua.execute("""
+        local entries={}
+        MenuUtil={CreateContextMenu=function(owner,build)
+            local root={}
+            function root:CreateTitle(text) end
+            function root:CreateCheckbox(text,getter,toggle) entries[text]={getter=getter,toggle=toggle} end
+            function root:CreateButton(text,click) entries[text]={click=click} end
+            build(owner,root)
+        end}
+        NeonOmenRebornMeter.scripts.OnMouseUp(NeonOmenRebornMeter,'RightButton')
+        assert(entries[ns.L.locked] and entries[ns.L.useFocus] and entries[ns.L.showTPS])
+        entries[ns.L.locked].toggle()
+        assert(ns.db.locked)
+        entries[ns.L.useFocus].toggle()
+        assert(ns.db.useFocus)
+        entries[ns.L.openSettings].click()
+        assert(NeonOmenRebornSettings.shown)
+    """)
+
+
 def test_warning_flash_uses_four_screen_edges():
     lua=runtime()
     lua.execute("""

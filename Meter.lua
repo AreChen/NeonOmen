@@ -365,6 +365,22 @@ function ns.RefreshMeter()
         else row:Hide() end
     end
 end
+local function openContextMenu(owner)
+    if MenuUtil and MenuUtil.CreateContextMenu then
+        local ok=pcall(MenuUtil.CreateContextMenu,owner,function(_,root)
+            root:CreateTitle("NeonOmen Reborn")
+            for _,name in ipairs({"locked","test","useFocus","showTPS","showAggroBar"}) do
+                local key=name
+                root:CreateCheckbox(ns.L[key],function() return ns.db[key] end,
+                    function() ns.Set(key,not ns.db[key]);return MenuResponse and MenuResponse.Refresh end)
+            end
+            root:CreateButton(ns.L.openSettings,function() if ns.ToggleSettings then ns.ToggleSettings() end end)
+            root:CreateButton(ns.L.hideWindow,function() ns.ToggleMeter() end)
+        end)
+        if ok then return end
+    end
+    if ns.ToggleSettings then ns.ToggleSettings() end
+end
 function ns.CreateMeter()
     meter = CreateFrame("Frame","NeonOmenRebornMeter",UIParent)
     meter.resizing=false;meter.dragging=false;meter.shakeTime=0
@@ -374,7 +390,7 @@ function ns.CreateMeter()
     if meter.SetResizeBounds then meter:SetResizeBounds(160,70,600,600) end
     meter:RegisterForDrag("LeftButton")
     meter:SetScript("OnMouseUp",function(_,button)
-        if button=="RightButton" and ns.ToggleSettings then ns.ToggleSettings() end
+        if button=="RightButton" then openContextMenu(meter) end
     end)
     meter:SetScript("OnDragStart",function(self)
         if not ns.db.locked then self.shakeTime=0;self.dragging=true;self:StartMoving() end

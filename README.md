@@ -15,6 +15,7 @@ previous NeonOmen addon nor automatically imports its settings.
 - `/nor toggle` hides or shows the meter; `/nor reset` resets its position.
 - `/nor debug` prints the current hostile target and player threat diagnostics
   to chat, marking restricted values as unavailable.
+- Right-click the meter for quick access to locking, focus, TPS, preview and settings.
 - Left-click the minimap button for settings, Shift-left-click to show or hide
   the meter, right-click for preview, and
   drag it to reposition it. Lock, preview and position controls are also
