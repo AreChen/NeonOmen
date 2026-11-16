@@ -159,10 +159,14 @@ local function showForContext()
     return ns.db.showSolo
 end
 local function fireAlert(message)
-    if ns.db.warningSound and PlaySound then
+    if ns.db.warningSound then
         local choice=ns.sounds[ns.db.soundChoice] or ns.sounds[1]
-        local id=SOUNDKIT and SOUNDKIT[choice[1]] or 8959
-        PlaySound(id,"Master")
+        if type(choice[1])=="number" then
+            if PlaySoundFile then PlaySoundFile(choice[1],"Master") end
+        elseif PlaySound then
+            local id=SOUNDKIT and SOUNDKIT[choice[1]] or 8959
+            PlaySound(id,"Master")
+        end
     end
     if ns.db.warningMessage and UIErrorsFrame then UIErrorsFrame:AddMessage(message,1,0.3,0.2) end
     if ns.db.warningFlash and meter.flash then meter.flashTime=0.7;meter.flash:Show() end

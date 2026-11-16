@@ -321,6 +321,20 @@ def test_assigned_tank_still_has_warnings_suppressed():
     """)
 
 
+def test_alert_can_play_a_built_in_sound_file():
+    lua=runtime()
+    lua.execute("""
+        local played
+        PlaySoundFile=function(id,channel) played=id end
+        ns.Set('warningSound',true)
+        for index,choice in ipairs(ns.sounds) do
+            if choice[1]==568582 then ns.Set('soundChoice',index);break end
+        end
+        ns.TestAlert()
+        assert(played==568582,'the selected sound file should play')
+    """)
+
+
 def test_tank_stances_suppress_warning_without_assigned_role():
     for class_name, form in [('WARRIOR',18),('DRUID',5),('DRUID',8)]:
         lua=runtime()

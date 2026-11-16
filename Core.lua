@@ -32,6 +32,9 @@ ns.sounds = {
     {"ALARM_CLOCK_WARNING_3","soundAlarm3"}, {"TELL_MESSAGE","soundWhisper"},
     {"IG_PLAYER_INVITE","soundInvite"}, {"LEVEL_UP","soundLevel"},
     {"IG_QUEST_LIST_COMPLETE","soundQuest"}, {"MAP_PING","soundPing"},
+    {"AUCTION_WINDOW_OPEN","soundAuction"}, {568582,"soundFel"},
+    {566982,"soundExplosion"}, {566946,"soundImpact"}, {567275,"soundDrums"},
+    {546633,"soundDoom"}, {567283,"soundCheer"}, {566121,"soundDuck"},
 }
 ns.barTextures = {
     "Interface\\Buttons\\WHITE8X8",
@@ -144,6 +147,10 @@ local more = {
     soundAlarm1={"Alarm 1","鬧鐘 1","闹钟 1"}, soundAlarm2={"Alarm 2","鬧鐘 2","闹钟 2"}, soundAlarm3={"Alarm 3","鬧鐘 3","闹钟 3"},
     soundWhisper={"Whisper","密語","密语"}, soundInvite={"Invitation","邀請","邀请"},
     soundLevel={"Level up","升級","升级"}, soundQuest={"Quest complete","任務完成","任务完成"}, soundPing={"Map ping","地圖標記","地图标记"},
+    soundAuction={"Auction house","拍賣場","拍卖行"}, soundFel={"Fel nova","邪能新星","邪能新星"},
+    soundExplosion={"Explosion","爆炸","爆炸"}, soundImpact={"Impact","衝擊","冲击"},
+    soundDrums={"War drums","戰鼓","战鼓"}, soundDoom={"You will die","死亡警告","死亡警告"},
+    soundCheer={"Cheer","歡呼","欢呼"}, soundDuck={"Rubber duck","橡皮鴨","橡皮鸭"},
     height={"Window height","視窗高度","窗口高度"},
     autoCollapse={"Fit height to rows","按條目自動收合","按条目自动收合"},
     growUp={"Grow upwards","向上增長","向上增长"},
