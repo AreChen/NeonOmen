@@ -51,6 +51,7 @@ def runtime(locale="enUS"):
         function M:SetFormattedText(fmt,...) if rejectSecretFormat then error('restricted') end;self.formatted={fmt,...} end
         function M:SetVertexColor(...) self.color={...} end
         function M:SetValue(v) if rejectSecretValue and type(v)=='table' and v.secret then error('restricted') end;self.statusValue=v end
+        function M:SetAlpha(v) self.alpha=v end
         function M:SetStatusBarColor(...) self.barColor={...} end
         function M:SetStatusBarTexture(path) self.barTexture=path end
         function M:SetTexture(path) self.texturePath=path end
@@ -648,6 +649,10 @@ def test_warning_flash_uses_four_screen_edges():
         ns.TestAlert()
         local flash=NeonOmenRebornMeter.flash
         assert(flash.shown and #flash.edges==4)
+        flash.scripts.OnUpdate(flash,0.6)
+        assert(flash.alpha < 0.2)
+        ns.TestAlert()
+        assert(flash.alpha==1, 'repeated alert must restore full flash intensity')
         flash.scripts.OnUpdate(flash,1)
         assert(not flash.shown)
     """)

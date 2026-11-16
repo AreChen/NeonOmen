@@ -49,11 +49,10 @@ rejects a restricted value, the meter displays a placeholder. A readable
 threat status can still trigger a warning.
 
 This is a development build. Visual preview and settings have been checked in
-the Forever client along with some live combat; the updated controller navigation
-still needs physical verification. Alerts can optionally shake the meter or game
+the Forever client along with some live combat and physical controller navigation;
+restricted values still need more live verification. Alerts can optionally shake the meter or game
 world separately. World shake is off by default, skips protected frames and
-restores the original position when permitted. Profiles use three numbered slots rather than
-the older addon's named profiles.
+restores the original position when permitted. Profiles use three numbered slots.
 
 ## Development
 

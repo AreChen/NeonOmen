@@ -216,7 +216,7 @@ local function fireAlert(message)
         end
     end
     if ns.db.warningMessage and UIErrorsFrame then UIErrorsFrame:AddMessage(message,1,0.3,0.2) end
-    if ns.db.warningFlash and meter.flash then meter.flashTime=0.7;meter.flash:Show() end
+    if ns.db.warningFlash and meter.flash then meter.flashTime=0.7;meter.flash:SetAlpha(1);meter.flash:Show() end
     if ns.db.warningShake and not meter.dragging and not meter.resizing then meter.shakeTime=0.45 end
     if ns.db.warningScreenShake then shakeWorld() end
 end
