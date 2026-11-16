@@ -288,7 +288,16 @@ function NeonOmenReborn_TogglePreview() if ns.db then ns.Set("test",not ns.db.te
 function NeonOmenReborn_ToggleSettings() if ns.ToggleSettings then ns.ToggleSettings() end end
 local events = CreateFrame("Frame")
 events:RegisterEvent("ADDON_LOADED")
+events:RegisterEvent("PLAYER_LOGIN")
 events:SetScript("OnEvent", function(_, event, name)
+    if event == "PLAYER_LOGIN" then
+        local meter = _G.NeonOmenRebornMeter
+        if meter and ns.db then
+            meter:SetUserPlaced(false)
+            meter:ClearAllPoints(); meter:SetPoint("CENTER", UIParent, "CENTER", ns.db.x, ns.db.y)
+        end
+        return
+    end
     if event ~= "ADDON_LOADED" or name ~= addonName then return end
     ns.InitDB()
     ns.CreateMeter()

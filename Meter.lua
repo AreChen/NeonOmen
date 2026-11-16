@@ -459,6 +459,7 @@ local function openContextMenu(owner)
 end
 function ns.CreateMeter()
     meter = CreateFrame("Frame","NeonOmenRebornMeter",UIParent)
+    meter:SetDontSavePosition(true); meter:SetUserPlaced(false)
     meter.resizing=false;meter.dragging=false;meter.shakeTime=0
     meter:SetPoint("CENTER",UIParent,"CENTER",ns.db.x,ns.db.y)
     meter:SetClampedToScreen(true); meter:SetMovable(true); meter:EnableMouse(true)
@@ -474,6 +475,7 @@ function ns.CreateMeter()
     meter:SetScript("OnDragStop",function(self)
         self.dragging=false
         self:StopMovingOrSizing()
+        self:SetUserPlaced(false)
         local x,y = self:GetCenter()
         local cx,cy = UIParent:GetCenter()
         x,y,cx,cy=ns.Safe(x),ns.Safe(y),ns.Safe(cx),ns.Safe(cy)
@@ -512,7 +514,7 @@ function ns.CreateMeter()
     end)
     grip:SetScript("OnMouseUp",function()
         if not meter.resizing then return end
-        meter:StopMovingOrSizing();meter.resizing=false
+        meter:StopMovingOrSizing();meter:SetUserPlaced(false);meter.resizing=false
         local w,h=ns.Safe(meter:GetWidth()),ns.Safe(meter:GetHeight())
         if type(w)=="number" then ns.db.width=max(160,min(600,w)) end
         if type(h)=="number" then ns.db.height=max(70,min(600,h));ns.db.autoCollapse=false end

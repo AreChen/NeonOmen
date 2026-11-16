@@ -46,6 +46,9 @@ def runtime(locale="enUS"):
         function M:SetWidth(w) assert(w>=0, 'width must not be negative');self.width=w end
         function M:GetWidth() return self.width end
         function M:SetPoint(...) self.point={...} end
+        function M:SetDontSavePosition(v) self.dontSavePosition=v end
+        function M:SetUserPlaced(v) self.userPlaced=v end
+        function M:StopMovingOrSizing() self.userPlaced=true end
         function M:SetText(s) if rejectSecretText and type(s)=='table' and s.secret then error('restricted') end;self.text=s end
         function M:SetFont(path,size,flags) self.fontPath=path;self.fontSize=size end
         function M:SetFormattedText(fmt,...) if rejectSecretFormat then error('restricted') end;self.formatted={fmt,...} end
@@ -87,6 +90,25 @@ def test_startup_meter_and_persisted_settings():
         UnitCanAttack=function() return false end
         ns.RefreshMeter()
         assert(NeonOmenRebornMeter.empty.shown)
+    """)
+
+
+def test_meter_owns_position_after_layout_restore_and_drag_at_scaled_ui():
+    lua = runtime()
+    lua.execute("""
+        local meter = NeonOmenRebornMeter
+        assert(meter.dontSavePosition == true)
+        ns.db.x, ns.db.y = 250, -125
+        meter:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 20)
+        frames[1].scripts.OnEvent(frames[1], 'PLAYER_LOGIN')
+        assert(meter.point[1] == 'CENTER' and meter.point[4] == 250 and meter.point[5] == -125)
+        UIParent.GetCenter = function() return 960, 540 end
+        UIParent.GetEffectiveScale = function() return 0.666667 end
+        meter.GetCenter = function() return 1210, 415 end
+        meter.GetEffectiveScale = function() return 0.666667 end
+        meter.scripts.OnDragStop(meter)
+        assert(math.abs(ns.db.x - 250) < 0.001 and math.abs(ns.db.y + 125) < 0.001)
+        assert(meter.userPlaced == false)
     """)
 
 
