@@ -42,7 +42,7 @@ function ns.CreateMinimap()
     button:SetScript("OnEnter",function(self)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self,"ANCHOR_LEFT")
-        GameTooltip:AddLine("NeonOmen Reborn")
+        GameTooltip:AddLine("NeonOmen")
         GameTooltip:AddLine(ns.L.minimapLeft,1,1,1)
         GameTooltip:AddLine(ns.L.minimapShift,1,1,1)
         GameTooltip:AddLine(ns.L.minimapRight,1,1,1)
