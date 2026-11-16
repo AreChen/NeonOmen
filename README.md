@@ -13,7 +13,8 @@ previous NeonOmen addon nor automatically imports its settings.
 - `/nor lock` and `/nor unlock` control dragging; unlocking also turns off
   click-through so the window can be recovered.
 - `/nor toggle` hides or shows the meter; `/nor reset` resets its position.
-- Left-click the minimap button for settings, right-click for preview, and
+- Left-click the minimap button for settings, Shift-left-click to show or hide
+  the meter, right-click for preview, and
   drag it to reposition it. Lock, preview and position controls are also
   available at the bottom of the settings window.
 

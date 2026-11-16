@@ -384,11 +384,25 @@ function ns.CreateMeter()
     meter.flash = CreateFrame("Frame",nil,UIParent)
     meter.flash:SetAllPoints(UIParent);meter.flash:SetFrameStrata("FULLSCREEN_DIALOG")
     meter.flash:EnableMouse(false)
-    meter.flash.overlay=texture(meter.flash,"OVERLAY",{1,0.05,0.05,0.15})
-    meter.flash.overlay:SetAllPoints();meter.flash:Hide()
+    meter.flash.edges={}
+    for i=1,4 do
+        local edge=texture(meter.flash,"OVERLAY",{1,1,1,1})
+        if i==1 then edge:SetPoint("TOPLEFT");edge:SetPoint("TOPRIGHT");edge:SetHeight(100)
+        elseif i==2 then edge:SetPoint("BOTTOMLEFT");edge:SetPoint("BOTTOMRIGHT");edge:SetHeight(100)
+        elseif i==3 then edge:SetPoint("TOPLEFT");edge:SetPoint("BOTTOMLEFT");edge:SetWidth(100)
+        else edge:SetPoint("TOPRIGHT");edge:SetPoint("BOTTOMRIGHT");edge:SetWidth(100) end
+        if edge.SetGradient and CreateColor then
+            local strong,clear=CreateColor(1,0.05,0.05,0.65),CreateColor(1,0.05,0.05,0)
+            local first,second=clear,strong
+            if i==2 or i==3 then first,second=strong,clear end
+            edge:SetGradient(i<=2 and "VERTICAL" or "HORIZONTAL",first,second)
+        else edge:SetVertexColor(1,0.05,0.05,0.35) end
+        meter.flash.edges[i]=edge
+    end
+    meter.flash:Hide()
     meter.flash:SetScript("OnUpdate",function(self,dt)
         meter.flashTime=(meter.flashTime or 0)-dt
-        if meter.flashTime<=0 then self:Hide() else self.overlay:SetVertexColor(1,0.05,0.05,meter.flashTime*0.2) end
+        if meter.flashTime<=0 then self:Hide() else self:SetAlpha(meter.flashTime/0.7) end
     end)
     local driver=CreateFrame("Frame","NeonOmenRebornDriver",UIParent)
     driver:SetScript("OnUpdate",function(_,dt)

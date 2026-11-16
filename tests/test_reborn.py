@@ -388,6 +388,32 @@ def test_alert_can_shake_meter_without_moving_world_frame():
     """)
 
 
+def test_minimap_shift_click_toggles_meter_without_opening_settings():
+    lua=runtime()
+    lua.execute("""
+        IsShiftKeyDown=function() return true end
+        local button=NeonOmenRebornMinimapButton
+        local wasShown=NeonOmenRebornMeter.shown
+        button.scripts.OnClick(button,'LeftButton')
+        assert(NeonOmenRebornMeter.shown~=wasShown)
+        assert(not NeonOmenRebornSettings.shown)
+        button.scripts.OnClick(button,'LeftButton')
+        assert(NeonOmenRebornMeter.shown==wasShown)
+    """)
+
+
+def test_warning_flash_uses_four_screen_edges():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('warningFlash',true)
+        ns.TestAlert()
+        local flash=NeonOmenRebornMeter.flash
+        assert(flash.shown and #flash.edges==4)
+        flash.scripts.OnUpdate(flash,1)
+        assert(not flash.shown)
+    """)
+
+
 def test_restricted_widget_rejection_degrades_without_crashing():
     lua=runtime()
     lua.execute("""
