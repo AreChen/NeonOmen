@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: NeonOmen Reborn
+## Notes: Independent threat display for World of Warcraft Forever
+## Author: AreChen
+## Version: 0.1.0-dev
+## SavedVariables: NeonOmenRebornDB
+
+Core.lua
+Meter.lua
+Settings.lua
+Minimap.lua
