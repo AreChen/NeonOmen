@@ -321,6 +321,37 @@ def test_assigned_tank_still_has_warnings_suppressed():
     """)
 
 
+def test_tank_stances_suppress_warning_without_assigned_role():
+    for class_name, form in [('WARRIOR',18),('DRUID',5),('DRUID',8)]:
+        lua=runtime()
+        lua.globals().testClass=class_name
+        lua.globals().testForm=form
+        lua.execute("""
+            UnitGroupRolesAssigned=function() return 'NONE' end
+            UnitClass=function() return testClass,testClass end
+            GetShapeshiftFormID=function() return testForm end
+            UnitDetailedThreatSituation=function() return false,2,90,90,1200 end
+            local alerts=0
+            UIErrorsFrame={AddMessage=function() alerts=alerts+1 end}
+            ns.Set('suppressTank',true);ns.RefreshMeter()
+            assert(alerts==0,'tank stance should suppress warnings')
+        """)
+
+
+def test_paladin_righteous_fury_suppresses_warning():
+    lua=runtime()
+    lua.execute("""
+        UnitGroupRolesAssigned=function() return 'NONE' end
+        UnitClass=function() return 'Paladin','PALADIN' end
+        C_UnitAuras={GetPlayerAuraBySpellID=function(id) if id==25780 then return {} end end}
+        UnitDetailedThreatSituation=function() return false,2,90,90,1200 end
+        local alerts=0
+        UIErrorsFrame={AddMessage=function() alerts=alerts+1 end}
+        ns.Set('suppressTank',true);ns.RefreshMeter()
+        assert(alerts==0,'Righteous Fury should suppress warnings')
+    """)
+
+
 def test_role_color_override_can_be_disabled_to_use_class_color():
     lua=runtime()
     lua.execute("""

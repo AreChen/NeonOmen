@@ -169,10 +169,23 @@ local function fireAlert(message)
     if ns.db.warningShake and not meter.dragging and not meter.resizing then meter.shakeTime=0.45 end
 end
 function ns.TestAlert() if meter then fireAlert(ns.L.title..": 90%") end end
+local function isAssignedOrStanceTank()
+    if safeCall(UnitGroupRolesAssigned,"player")=="TANK" then return true end
+    if not UnitClass then return false end
+    local ok,_,class=pcall(UnitClass,"player")
+    class=ok and ns.Safe(class) or nil
+    if class=="WARRIOR" or class=="DRUID" then
+        local form=safeCall(GetShapeshiftFormID)
+        return (class=="WARRIOR" and form==18) or (class=="DRUID" and (form==5 or form==8))
+    end
+    if class=="PALADIN" and C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
+        return type(safeCall(C_UnitAuras.GetPlayerAuraBySpellID,25780))=="table"
+    end
+    return false
+end
 local function maybeAlert(data, target)
     if ns.db.test then return end
     local now = GetTime and GetTime() or 0
-    local role = UnitGroupRolesAssigned and ns.Safe(UnitGroupRolesAssigned("player"))
     local targetID = target and ((UnitGUID and ns.Safe(UnitGUID(target))) or target)
     local attackingPlayer = target and UnitIsUnit and ns.Safe(UnitIsUnit(target.."target", "player")) or false
     local gained = targetID and aggroTarget == targetID and hadAggro == false and attackingPlayer
@@ -186,8 +199,8 @@ local function maybeAlert(data, target)
         or playerEntry.secretPct and playerEntry.status and playerEntry.status >= 1 and not playerEntry.tank) or false
     local crossed=near and not wasNear
     wasNear=near
-    if now - lastWarning < ns.db.warningCooldown or (ns.db.suppressTank and role=="TANK") then return end
     if playerEntry and (crossed or (ns.db.warningAggro and gained)) then
+            if now - lastWarning < ns.db.warningCooldown or (ns.db.suppressTank and isAssignedOrStanceTank()) then return end
             lastWarning = now
             local message=gained and ns.db.warningAggro and ns.L.aggroTaken
                 or playerEntry.pct and (ns.L.title..": "..string.format("%.0f%%",playerEntry.pct)) or ns.L.aggroNear

@@ -29,6 +29,8 @@ displayed when readable client data distinguishes 110% from 130%.
 Names can show a tank marker, a short-lived threat-transfer marker, and
 dead/offline status; pet names have a localized suffix. Restricted names are
 passed directly to the client and cannot be decorated.
+Tank alert suppression recognizes an assigned tank role, defensive stance,
+bear forms and Righteous Fury where the client allows those states to be read.
 Built-in materials include rounded neon; fonts and bar textures registered
 with LibSharedMedia are also available when another addon provides the library.
 The controls page offers three independent profile slots that remember changes
