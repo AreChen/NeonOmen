@@ -436,11 +436,11 @@ end
 function ns.RegisterSettingsCategory()
     if not Settings or not Settings.RegisterCanvasLayoutCategory or not Settings.RegisterAddOnCategory then return end
     local panel=CreateFrame("Frame",nil,UIParent)
-    local title=label(panel,"NeonOmen Reborn","GameFontNormalLarge")
+    local title=label(panel,"NeonOmen","GameFontNormalLarge")
     title:SetPoint("TOPLEFT",24,-28)
     local button=smallButton(panel,ns.L.openSettings)
     button:SetSize(260,34);button:SetPoint("TOPLEFT",24,-70)
     button:SetScript("OnClick",function() if frame and not frame:IsShown() then frame:Show() end end)
-    local ok,category=pcall(Settings.RegisterCanvasLayoutCategory,panel,"NeonOmen Reborn")
+    local ok,category=pcall(Settings.RegisterCanvasLayoutCategory,panel,"NeonOmen")
     if ok and category then pcall(Settings.RegisterAddOnCategory,category) end
 end

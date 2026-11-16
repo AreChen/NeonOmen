@@ -72,7 +72,7 @@ function ns.Debug()
         if type(value)=="number" or type(value)=="boolean" or type(value)=="string" then return tostring(value) end
         return unavailable
     end
-    print("NeonOmen Reborn | "..ns.L.debugTarget..": "..describe(target).." ("..describe(target and safeCall(UnitName,target))..")")
+    print("NeonOmen | "..ns.L.debugTarget..": "..describe(target).." ("..describe(target and safeCall(UnitName,target))..")")
     if not target or not UnitDetailedThreatSituation then return end
     local ok,_,status,scaled,raw,value=pcall(UnitDetailedThreatSituation,"player",target)
     if not ok then print(ns.L.debugData..": "..unavailable);return end
@@ -435,7 +435,7 @@ end
 local function openContextMenu(owner)
     if MenuUtil and MenuUtil.CreateContextMenu then
         local ok=pcall(MenuUtil.CreateContextMenu,owner,function(_,root)
-            root:CreateTitle("NeonOmen Reborn")
+            root:CreateTitle("NeonOmen")
             for _,name in ipairs({"locked","test","useFocus","showTPS","showAggroBar"}) do
                 local key=name
                 root:CreateCheckbox(ns.L[key],function() return ns.db[key] end,

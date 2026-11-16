@@ -212,7 +212,7 @@ if zh and not tw then
     text.empty, text.on, text.off, text.solid, text.gradient, text.glass = "目前没有仇恨数据", "开", "关", "纯色", "渐变", "玻璃"
 end
 ns.L = text
-BINDING_HEADER_NEONOMENREBORN = "NeonOmen Reborn"
+BINDING_HEADER_NEONOMENREBORN = "NeonOmen"
 BINDING_NAME_NEONOMENREBORN_TOGGLE = text.bindingToggle
 BINDING_NAME_NEONOMENREBORN_FOCUS = text.bindingFocus
 BINDING_NAME_NEONOMENREBORN_PREVIEW = text.bindingPreview

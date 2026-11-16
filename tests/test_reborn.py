@@ -528,7 +528,7 @@ def test_addon_appears_in_blizzard_settings_when_available():
             RegisterAddOnCategory=function(value) registered=value end,
         }
         ns.RegisterSettingsCategory()
-        assert(registered==category and category.name=='NeonOmen Reborn')
+        assert(registered==category and category.name=='NeonOmen')
     """)
 
 

@@ -1,5 +1,5 @@
 ## Interface: 16001
-## Title: NeonOmen Reborn
+## Title: NeonOmen
 ## Notes: Independent threat display for World of Warcraft Forever
 ## Author: AreChen
 ## Version: 0.1.0-dev
