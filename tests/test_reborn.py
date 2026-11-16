@@ -105,6 +105,28 @@ def test_styles_and_colors_are_adjustable():
     """)
 
 
+def test_color_settings_display_their_current_swatch():
+    lua=runtime()
+    lua.execute("""
+        SlashCmdList.NEONOMENREBORN()
+        for _,f in ipairs(frames) do
+            local text=rawget(f,'text')
+            if type(text)=='table' and rawget(text,'text')==ns.L.colors then f.scripts.OnClick(f);break end
+        end
+        for _,f in ipairs(frames) do
+            local caption=rawget(f,'caption')
+            if type(caption)=='table' and rawget(caption,'text')==ns.L.roleColors then f.scripts.OnClick(f);break end
+        end
+        local found=false
+        for _,f in ipairs(frames) do
+            local swatch=rawget(f,'swatch')
+            if swatch and swatch.shown and swatch.color and swatch.color[1]==ns.db.selfRed
+                and swatch.color[2]==ns.db.selfGreen and swatch.color[3]==ns.db.selfBlue then found=true end
+        end
+        assert(found,'role color setting should show its actual color')
+    """)
+
+
 def test_threat_rate_visibility_and_filters():
     lua = runtime()
     lua.execute("""

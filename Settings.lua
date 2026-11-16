@@ -237,6 +237,7 @@ local function paint()
     frame.heading:SetText(ns.L[definition.key])
     for i,button in ipairs(nav) do
         button.bg:SetVertexColor(i==groupIndex and 0.13 or 0.055,i==groupIndex and 0.21 or 0.075,i==groupIndex and 0.29 or 0.10,1)
+        button.accent:SetVertexColor(ns.db.red,ns.db.green,ns.db.blue,i==groupIndex and 1 or 0)
     end
     for i,button in ipairs(tabs) do
         local pageIndex=group.pages[i]
@@ -244,6 +245,7 @@ local function paint()
         if pageIndex then
             button.caption:SetText(ns.L[pages[pageIndex].key])
             button.bg:SetVertexColor(pageIndex==page and 0.15 or 0.08,pageIndex==page and 0.27 or 0.11,pageIndex==page and 0.34 or 0.15,1)
+            button.accent:SetVertexColor(ns.db.red,ns.db.green,ns.db.blue,pageIndex==page and 1 or 0)
         end
     end
     active=definition.entries
@@ -253,6 +255,15 @@ local function paint()
             row.name:SetText(ns.L[entry.key])
             row.value:SetText(readableValue(entry))
             row.bg:SetVertexColor(i==selected and 0.12 or 0.065,i==selected and 0.19 or 0.085,i==selected and 0.25 or 0.11,1)
+            row.accent:SetVertexColor(ns.db.red,ns.db.green,ns.db.blue,i==selected and 0.9 or 0)
+            row.swatch:SetShown(entry.kind=="color")
+            if entry.kind=="color" then
+                local prefix=entry.prefix
+                local r,g,b=prefix and ns.db[prefix.."Red"] or ns.db.red,
+                    prefix and ns.db[prefix.."Green"] or ns.db.green,
+                    prefix and ns.db[prefix.."Blue"] or ns.db.blue
+                row.swatch:SetVertexColor(r,g,b,1)
+            end
             row:Show()
         else row:Hide() end
     end
@@ -310,12 +321,16 @@ function ns.CreateSettings()
         local b=CreateFrame("Button",nil,sidebar)
         b:SetSize(190,36);b:SetPoint("TOPLEFT",10,-85-(i-1)*42)
         b.bg=box(b,{0.055,0.075,0.10,1})
+        b.accent=b:CreateTexture(nil,"ARTWORK");b.accent:SetTexture(white)
+        b.accent:SetPoint("TOPLEFT",0,-3);b.accent:SetPoint("BOTTOMLEFT",0,3);b.accent:SetWidth(3)
         b.text=label(b,ns.L[definition.key]);b.text:SetPoint("LEFT",14,0)
         b:SetScript("OnClick",function() choosePage(definition.pages[1]) end)
         nav[i]=b
     end
     for i=1,5 do
         local tab=smallButton(frame,"")
+        tab.accent=tab:CreateTexture(nil,"ARTWORK");tab.accent:SetTexture(white)
+        tab.accent:SetPoint("BOTTOMLEFT");tab.accent:SetPoint("BOTTOMRIGHT");tab.accent:SetHeight(2)
         tab:SetSize(108,25);tab:SetPoint("TOPLEFT",240+(i-1)*112,-87)
         tab.caption:SetWidth(100)
         tab:SetScript("OnClick",function()
@@ -331,6 +346,10 @@ function ns.CreateSettings()
         local row=CreateFrame("Button",nil,section)
         row:SetSize(556,50);row:SetPoint("TOPLEFT",12,-12-(i-1)*60)
         row.bg=box(row,{0.065,0.085,0.11,1})
+        row.accent=row:CreateTexture(nil,"ARTWORK");row.accent:SetTexture(white)
+        row.accent:SetPoint("TOPLEFT",0,-4);row.accent:SetPoint("BOTTOMLEFT",0,4);row.accent:SetWidth(2)
+        row.swatch=row:CreateTexture(nil,"ARTWORK");row.swatch:SetTexture(white)
+        row.swatch:SetSize(18,18);row.swatch:SetPoint("RIGHT",-82,0)
         row.name=label(row,"");row.name:SetPoint("LEFT",14,0)
         row.value=label(row,"");row.value:SetPoint("RIGHT",-56,0);row.value:SetJustifyH("RIGHT")
         local previous=smallButton(row,"‹")
