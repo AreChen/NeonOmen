@@ -329,8 +329,8 @@ def test_bar_glow_tracks_its_color_and_can_be_disabled():
             if f.kind=='StatusBar' and rawget(f,'glow') then row=f;break end
         end
         assert(row and row.glow.color[4]>0, 'threat bar has a visible glow')
-        ns.Set('glow',false)
-        assert(row.glow.color[4]==0, 'bar glow follows the glow setting')
+        ns.Set('barGlow',false)
+        assert(row.glow.color[4]==0, 'bar glow can be disabled independently')
     """)
 
 
@@ -627,15 +627,41 @@ def test_bar_highlight_preserves_the_selected_texture_mask():
 def test_bar_halo_uses_soft_texture_and_respects_glow_setting():
     lua=runtime()
     lua.execute("""
-        ns.Set('test',true);ns.Set('glow',true);ns.Set('glowIntensity',1)
+        ns.Set('test',true);ns.Set('barGlow',true);ns.Set('barGlowIntensity',0.3)
         local halo
         for _,f in ipairs(frames) do
             if f.kind=='Texture' and type(rawget(f,'texturePath'))=='string'
                 and f.texturePath:find('BarGlow',1,true) then halo=f;break end
         end
         assert(halo and halo.color[4] > 0 and halo.color[4] < 0.5)
-        ns.Set('glow',false)
+        ns.Set('barGlow',false)
         assert(halo.color[4]==0)
+    """)
+
+
+def test_bar_halo_range_and_brightness_are_independent_of_window_glow():
+    lua=runtime()
+    lua.execute("""
+        ns.Set('test',true);ns.Set('barGlow',true);ns.Set('glow',false)
+        ns.Set('barGlowIntensity',0.2);ns.Set('barGlowSpread',1)
+        local row
+        for _,f in ipairs(frames) do if f.kind=='StatusBar' and rawget(f,'glow') then row=f;break end end
+        assert(row.glow.color[4]==0.2)
+        local offset=row.glow.point[4]
+        ns.Set('barGlowSpread',2)
+        assert(row.glow.point[4]>offset, 'wider spread should enlarge the halo bounds')
+        ns.Set('barGlowIntensity',0.1)
+        assert(row.glow.color[4]==0.1)
+    """)
+
+
+def test_existing_glow_settings_are_preserved_during_upgrade():
+    lua=runtime()
+    lua.execute("""
+        NeonOmenRebornDB={glow=false,glowIntensity=0.8}
+        ns.InitDB()
+        assert(not ns.db.barGlow)
+        assert(math.abs(ns.db.barGlowIntensity-0.304)<0.0001)
     """)
 
 

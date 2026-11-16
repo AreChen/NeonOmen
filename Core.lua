@@ -12,6 +12,7 @@ local defaults = {
     warningThreshold = 80, warningSound = true, warningMessage = true,
     warningFlash = true, warningCooldown = 4, suppressTank = true,
     showMinimap = true, glow = true, glowIntensity = 0.55,
+    barGlow = true, barGlowIntensity = 0.21, barGlowSpread = 1,
     showSelf = true, clickThrough = false, showMarker = true,
     height = 180, autoCollapse = true, growUp = false,
     showHeader = true, showAggroLine = true, showAggroBar = true, soundChoice = 1, hidePvp = false,
@@ -100,6 +101,10 @@ local more = {
     dead={"Dead","死亡","死亡"}, offline={"Offline","離線","离线"},
     glow={"Window glow","視窗光暈","窗口光晕"},
     glowIntensity={"Glow intensity","光暈強度","光晕强度"},
+    barGlowPage={"Bar glow","條形光暈","条形光晕"},
+    barGlow={"Show bar glow","顯示條形光暈","显示条形光晕"},
+    barGlowIntensity={"Bar glow intensity","條形光暈強度","条形光晕强度"},
+    barGlowSpread={"Bar glow spread","條形光暈範圍","条形光晕范围"},
     colorPicker={"Choose bar color","選擇條形顏色","选择条形颜色"},
     geometry={"Window size","視窗尺寸","窗口尺寸"},
     alertSound={"Alert options","警報選項","警报选项"},
@@ -217,6 +222,12 @@ function ns.MediaPath(kind,name)
 end
 function ns.InitDB()
     if type(NeonOmenRebornDB) ~= "table" then NeonOmenRebornDB = {} end
+    if NeonOmenRebornDB.barGlow==nil and type(NeonOmenRebornDB.glow)=="boolean" then
+        NeonOmenRebornDB.barGlow=NeonOmenRebornDB.glow
+    end
+    if NeonOmenRebornDB.barGlowIntensity==nil and type(NeonOmenRebornDB.glowIntensity)=="number" then
+        NeonOmenRebornDB.barGlowIntensity=math.max(0,math.min(0.6,NeonOmenRebornDB.glowIntensity*0.38))
+    end
     for key, value in pairs(defaults) do
         if NeonOmenRebornDB[key] == nil then NeonOmenRebornDB[key] = value end
     end
@@ -238,6 +249,10 @@ function ns.SwitchProfile(slot)
     for key,value in pairs(defaults) do db[key]=target[key]~=nil and target[key] or value end
     -- False is a valid setting and must survive a profile change.
     for key,value in pairs(target) do db[key]=value end
+    if target.barGlow==nil and type(target.glow)=="boolean" then db.barGlow=target.glow end
+    if target.barGlowIntensity==nil and type(target.glowIntensity)=="number" then
+        db.barGlowIntensity=math.max(0,math.min(0.6,target.glowIntensity*0.38))
+    end
     db.test=false;db.profileSlot=slot
     local meter=_G.NeonOmenRebornMeter
     if meter then meter:ClearAllPoints();meter:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y) end

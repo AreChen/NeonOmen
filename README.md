@@ -30,6 +30,8 @@ Built-in materials include rounded neon; fonts and bar textures registered
 with LibSharedMedia are also available when another addon provides the library.
 The controls page offers three independent profile slots that remember changes
 when you switch between them.
+Under Appearance → Bar glow, adjust each bar's halo intensity and spread
+independently from the window glow.
 
 With gamepad input enabled, the D-pad selects and changes settings, A
 activates, B closes, and the shoulder buttons switch pages. Navigation is

@@ -118,9 +118,14 @@ local pages = {
         {key="barTexture",kind="choice",count=4},
     }},
     {key="profilePage", entries={{key="profileSlot",kind="profile"}}},
+    {key="barGlowPage", entries={
+        {key="barGlow",kind="boolean"},
+        {key="barGlowIntensity",kind="number",min=0,max=0.6,step=0.05},
+        {key="barGlowSpread",kind="number",min=0.5,max=2,step=0.1},
+    }},
 }
 local groups = {
-    {key="appearance", pages={1,8,12,20}},
+    {key="appearance", pages={1,8,12,20,22}},
     {key="layout", pages={2,10,9,18}},
     {key="colors", pages={3,16,17,19}},
     {key="display", pages={5,6,13,14,15}},
@@ -167,7 +172,7 @@ local function readableValue(entry)
         if entry.key=="barTexture" then return ns.L[({"textureFlat", "textureClassic", "textureSoft", "textureNeon"})[value]] end
         return ({ns.L.solid,ns.L.gradient,ns.L.glass})[value]
     end
-    if entry.key=="opacity" or entry.key=="windowAlpha" or entry.key=="red" or entry.key=="green" or entry.key=="blue" or entry.key=="barAlpha" then return string.format("%d%%",math.floor(value*100+0.5)) end
+    if entry.key=="opacity" or entry.key=="windowAlpha" or entry.key=="red" or entry.key=="green" or entry.key=="blue" or entry.key=="barAlpha" or entry.key=="barGlowIntensity" or entry.key=="barGlowSpread" then return string.format("%d%%",math.floor(value*100+0.5)) end
     return tostring(value)
 end
 local function adjust(entry, direction)

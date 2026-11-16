@@ -313,16 +313,20 @@ function ns.RefreshMeter()
             if entry.reference or (not entry.tank and (entry.pct and entry.pct >= db.warningThreshold or entry.secretPct and entry.status and entry.status >= 1)) then r,g,b=db.aggroRed,db.aggroGreen,db.aggroBlue
             elseif entry.tank and db.useTankColor then r,g,b=db.tankRed,db.tankGreen,db.tankBlue end
             row:SetStatusBarColor(r,g,b,db.barAlpha)
-            row.glow:SetVertexColor(r,g,b,db.glow and min(1,db.glowIntensity*0.38) or 0)
+            row.glow:SetVertexColor(r,g,b,db.barGlow and db.barGlowIntensity or 0)
             local fill = barTexture
             if row.currentTexture ~= fill then
                 row:SetStatusBarTexture(fill)
                 row.shade:SetTexture(fill)
                 row.shade:SetAllPoints(row:GetStatusBarTexture())
-                row.glow:ClearAllPoints()
-                row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-18,13)
-                row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",18,-13)
                 row.currentTexture=fill
+            end
+            if row.glowSpread~=db.barGlowSpread or row.glowTexture~=fill then
+                local spread=db.barGlowSpread
+                row.glow:ClearAllPoints()
+                row.glow:SetPoint("TOPLEFT",row:GetStatusBarTexture(),"TOPLEFT",-18*spread,13*spread)
+                row.glow:SetPoint("BOTTOMRIGHT",row:GetStatusBarTexture(),"BOTTOMRIGHT",18*spread,-13*spread)
+                row.glowSpread=spread;row.glowTexture=fill
             end
             if fontPath and (row.fontPath~=fontPath or row.fontSize~=db.fontSize or row.fontFlags~=fontFlags) then
                 row.name:SetFont(fontPath,db.fontSize,fontFlags);row.value:SetFont(fontPath,db.fontSize,fontFlags)
