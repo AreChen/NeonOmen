@@ -221,6 +221,34 @@ def test_warning_only_fires_again_after_threat_drops_below_threshold():
     """)
 
 
+def test_damage_player_receives_aggro_warning_when_tank_suppression_enabled():
+    lua=runtime()
+    lua.execute("""
+        local tanking=false
+        UnitGroupRolesAssigned=function() return 'DAMAGER' end
+        UnitIsUnit=function(a,b) return a=='targettarget' and b=='player' and tanking end
+        UnitDetailedThreatSituation=function() return tanking,3,100,100,1200 end
+        local alerts=0
+        UIErrorsFrame={AddMessage=function() alerts=alerts+1 end}
+        ns.Set('suppressTank',true);ns.Set('warningThreshold',100);ns.Set('warningCooldown',1)
+        ns.RefreshMeter();alerts=0
+        now=now+2;tanking=true;ns.RefreshMeter()
+        assert(alerts==1,'a damage player must be warned on gaining aggro')
+    """)
+
+
+def test_assigned_tank_still_has_warnings_suppressed():
+    lua=runtime()
+    lua.execute("""
+        UnitGroupRolesAssigned=function() return 'TANK' end
+        UnitDetailedThreatSituation=function() return false,2,90,90,1200 end
+        local alerts=0
+        UIErrorsFrame={AddMessage=function() alerts=alerts+1 end}
+        ns.Set('suppressTank',true);ns.RefreshMeter()
+        assert(alerts==0,'assigned tanks should still be suppressed')
+    """)
+
+
 def test_role_color_override_can_be_disabled_to_use_class_color():
     lua=runtime()
     lua.execute("""

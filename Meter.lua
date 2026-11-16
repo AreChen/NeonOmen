@@ -169,8 +169,7 @@ local function maybeAlert(data, target)
     local crossed=near and not wasNear
     wasNear=near
     if now - lastWarning < ns.db.warningCooldown or (ns.db.suppressTank and role=="TANK") then return end
-    if playerEntry and (crossed or (ns.db.warningAggro and gained))
-            and not (ns.db.suppressTank and playerEntry.tank) then
+    if playerEntry and (crossed or (ns.db.warningAggro and gained)) then
             lastWarning = now
             local message=gained and ns.db.warningAggro and ns.L.aggroTaken
                 or playerEntry.pct and (ns.L.title..": "..string.format("%.0f%%",playerEntry.pct)) or ns.L.aggroNear
