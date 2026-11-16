@@ -37,7 +37,9 @@ local function sampleRate(key, value, now)
     local points = history[key] or {}
     history[key] = points
     local last = points[#points]
-    if last and value < last.value then points = {}; history[key] = points; last = nil end
+    if last and (value < last.value or now-last.time>10 or now<last.time) then
+        points = {}; history[key] = points; last = nil
+    end
     if not last or now - last.time >= 0.24 then
         points[#points+1] = {time=now,value=value}
     end

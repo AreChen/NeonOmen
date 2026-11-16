@@ -131,6 +131,25 @@ def test_threat_rate_visibility_and_filters():
     """)
 
 
+def test_threat_rate_does_not_use_samples_older_than_ten_seconds():
+    lua=runtime()
+    lua.execute("""
+        now=1;threat=1200;ns.RefreshMeter()
+        now=20;threat=1600;ns.RefreshMeter()
+        local unavailable=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and rawget(f,'text')=='--/s  67%' then unavailable=true end
+        end
+        assert(unavailable, 'a stale sample must not be used for a new TPS estimate')
+        now=22;threat=2000;ns.RefreshMeter()
+        local measured=false
+        for _,f in ipairs(frames) do
+            if f.kind=='FontString' and rawget(f,'text')=='200/s  67%' then measured=true end
+        end
+        assert(measured, 'a fresh interval should restore TPS')
+    """)
+
+
 def test_opt_in_gamepad_navigation_and_combat_release():
     lua = runtime()
     lua.execute("""
