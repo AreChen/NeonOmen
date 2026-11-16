@@ -6,6 +6,10 @@ An independently developed threat meter for **World of Warcraft Forever**
 (Interface 16001). The project uses the MIT license. It neither loads the
 previous NeonOmen addon nor automatically imports its settings.
 
+![NeonOmen settings in the game](docs/screenshots/settings-preview.jpg)
+
+Game screenshot: the settings window is shown with example data enabled.
+
 ## Usage
 
 - `/nor` opens the settings window; `/nor test` toggles example data. Preview

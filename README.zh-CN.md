@@ -4,6 +4,10 @@
 
 面向**魔兽世界永恒服**（Interface 16001）独立开发的仇恨监测插件，采用 MIT 许可证。不会加载旧版 NeonOmen，也不会自动导入旧设置。
 
+![游戏内的 NeonOmen 设置界面](docs/screenshots/settings-preview.jpg)
+
+游戏实机截图：设置界面已开启示例数据。
+
 ## 使用
 
 - 输入 `/nor` 打开设置；输入 `/nor test` 开关示例数据。进入战斗或重载界面时会自动关闭预览，避免与实战数据混淆。
